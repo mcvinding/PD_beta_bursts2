@@ -14,14 +14,13 @@ import os.path as op
 import numpy as np
 import sys
 sys.path.append('/home/mikkel/PD_longrest/scripts')
-from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path
+from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring
 
 # %% run options
 overwrite_old_files = False                                     # Wheter files should be overwritten if already exist
-filestring          = 'rest_ec_mc_avgtrans_tsss_corr95'     # Unique string for finding raw files
 
 # bandpass filter
-Filter = [1, 48]
+Filter = [None, 48]
 
 # Number of components to reject
 n_max_ecg = 3
@@ -33,6 +32,7 @@ reject = dict(grad=4000e-13,    # T / m (gradiometers)
               )  
     
 #%% RUN
+missing_list = []
 for subj_date in subjects_and_dates:   
 
     # Find all files for same subject to run ICA on. The first step is to accomodate
@@ -43,11 +43,16 @@ for subj_date in subjects_and_dates:
     # Define paths (this outght to be done in the config file)
     raw_fpath = op.join(raw_path, subj_date)
     file_list = listdir(raw_fpath)
-    inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
-    inFiles.sort()
+    if subj in exceptions:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if exceptions[subj] in f]
+        inFiles.sort()
+    else:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
+        inFiles.sort()
     
     if not inFiles:
         print('WARNING: NO FILE FOR SUBJ '+subj)
+        missing_list += [subj]
         continue
     
     sub_path        = op.join(meg_path, subj)

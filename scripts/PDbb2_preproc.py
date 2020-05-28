@@ -14,13 +14,13 @@ import os.path as op
 import numpy as np
 import sys
 sys.path.append('/home/mikkel/PD_longrest/scripts')
-from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring
+from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring, old_subjs, old_raw_path, old_filestring
 
 # %% run options
 overwrite_old_files = False                                     # Wheter files should be overwritten if already exist
 
 # bandpass filter
-Filter = [None, 48]
+Filter = [None, 45]
 
 # Number of components to reject
 n_max_ecg = 3
@@ -30,31 +30,23 @@ n_max_eog = 2
 reject = dict(grad=4000e-13,    # T / m (gradiometers)
               mag=5e-12,        # T (magnetometers)
               )  
+
+startTrigger = 1
+stopTrigger  = 64
     
 #%% RUN
 missing_list = []
 for subj_date in subjects_and_dates:   
 
-    # Find all files for same subject to run ICA on. The first step is to accomodate
-    # files that have been split in two or more files.
     subj = subj_date.split('/')[0][-4:]
     print('Now processing subject '+subj)
     
-    # Define paths (this outght to be done in the config file)
-    raw_fpath = op.join(raw_path, subj_date)
-    file_list = listdir(raw_fpath)
-    if subj in exceptions:
-        inFiles = [op.join(raw_fpath,f) for f in file_list if exceptions[subj] in f]
-        inFiles.sort()
+    # Define paths and filenames (this outght to be done in the config file)
+    if subj in old_subjs:
+        raw_fpath   = op.join(old_raw_path, subj_date)
     else:
-        inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
-        inFiles.sort()
-    
-    if not inFiles:
-        print('WARNING: NO FILE FOR SUBJ '+subj)
-        missing_list += [subj]
-        continue
-    
+        raw_fpath   = op.join(raw_path, subj_date)
+
     sub_path        = op.join(meg_path, subj)
     ica_path        = op.join(meg_path, subj, 'ica')
     out_icaFname    = op.join(ica_path, 'comp-ica.fif')            # Name of ICA component (saved for bookkeeping)
@@ -69,7 +61,23 @@ for subj_date in subjects_and_dates:
         mkdir(sub_path)
     if not op.exists(ica_path):
         mkdir(ica_path)      
+
+    # Find all files for same subject to run ICA on. The first step is to accomodate
+    # files that have been split in two or more files.
+    file_list = listdir(raw_fpath)
+    if subj in exceptions:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if exceptions[subj] in f]
+    elif subj in old_subjs:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if old_filestring in f]
+    else:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
+    inFiles.sort()
     
+    if not inFiles:
+        print('WARNING: NO FILE FOR SUBJ '+subj)
+        missing_list += [subj]
+        continue
+  
     # Load data (This loop will make sure that split files are read toghether)
     for i, fname in enumerate(inFiles):
         print('loading '+str([f for f in inFiles]))
@@ -81,18 +89,41 @@ for subj_date in subjects_and_dates:
     # mark channels as bad if necessary - Maybe bad channels can be written to a dict and loaded.
 #        %raw.info['bads'] = ['MEG2332']                         # change for subjects after summer break (08/19)
 #        print (raw.info['bads'])
+
      
     # Filter data
     print('Filtering....')
     picks_meg = pick_types(raw.info, meg=True, eeg=False, eog=False, emg=False, misc=False, 
                            stim=False, exclude='bads')
-    raw_filt = raw.copy().filter(Filter[0], Filter[1], n_jobs=3, picks=picks_meg)
-    raw.filter(None, Filter[1], n_jobs=3, picks=picks_meg)
+    raw.filter(Filter[0], Filter[1], n_jobs=3, picks=picks_meg)
+    
+    # Find events and crop data
+    eve = mne.find_events(raw)
+    
+    # Trigger exceptions
+    if subj == '0333':                    # Missing triggers
+        startSam = 20000+raw.first_samp
+        stopSam = 180102+startSam       
+    elif subj == '0525':                 # Missing triggers
+        continue
+    elif subj == '0529':                 # Missing triggers
+        continue
+    else:
+        startSam = eve[eve[:,2] == startTrigger,0][0]
+        stopSam = eve[eve[:,2] == stopTrigger,0][0]
+    
+    raw.crop(tmin=(startSam - raw.first_samp ) / raw.info['sfreq'],
+             tmax=(stopSam - raw.first_samp ) / raw.info['sfreq'])
+    
+    # PSD for diagnostics
+    fig = raw.plot_psd(tmax=np.inf, fmax=55, dB=True)
+    fig.savefig(op.join(ica_path,'PSD.png'))
+    plt.close()
     
     # RUN ICA
     ica = ICA(n_components=0.95, method='fastica', random_state=0)
 
-    ica.fit(raw_filt, picks=picks_meg, decim=3, reject=reject, verbose=True)
+    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True)
 #    ica.labels_ = dict()        
     
     # Plot and save
@@ -156,11 +187,21 @@ for subj_date in subjects_and_dates:
         eog_evo_fig.savefig(op.join(ica_path, 'ICA_eog_overlay.png'))
         plt.close()
             
-    # Apply the solution to Raw, Epochs or Evoked like this:
+    # Apply  ICA to Raw
     raw_ica = ica.apply(raw)
+
+    # Crop data
+    eve = mne.find_events(raw)
+
+
+
+
     raw_ica.save(outfname, overwrite=overwrite_old_files)
 
-    print('----------- FINISHED '+subj+' -----------------')
+
     plt.close('all')
+    print('----------- FINISHED '+subj+' -----------------')
+    
+    
 
 #END

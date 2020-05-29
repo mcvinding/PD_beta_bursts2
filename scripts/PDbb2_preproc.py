@@ -8,7 +8,7 @@ folder for inspection.
 import matplotlib.pyplot as plt
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from mne.io import read_raw_fif
-from mne import pick_types
+from mne import pick_types, find_events
 from os import listdir, mkdir
 import os.path as op
 import numpy as np
@@ -17,7 +17,7 @@ sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring, old_subjs, old_raw_path, old_filestring
 
 # %% run options
-overwrite_old_files = False                                     # Wheter files should be overwritten if already exist
+overwrite_old_files = False     # Wheter files should be overwritten if already exist
 
 # bandpass filter
 Filter = [None, 45]
@@ -34,8 +34,11 @@ reject = dict(grad=4000e-13,    # T / m (gradiometers)
 startTrigger = 1
 stopTrigger  = 64
     
-#%% RUN
+# For debugging/diagnostics
 missing_list = []
+trigger_err = []
+
+#%% RUN
 for subj_date in subjects_and_dates:   
 
     subj = subj_date.split('/')[0][-4:]
@@ -67,18 +70,23 @@ for subj_date in subjects_and_dates:
     file_list = listdir(raw_fpath)
     if subj in exceptions:
         inFiles = [op.join(raw_fpath,f) for f in file_list if exceptions[subj] in f]
+    elif subj == '0322':
+        inFiles = [op.join(raw_fpath,f) for f in file_list if 'rest_eo2_mc_trans_tsss' in f]
     elif subj in old_subjs:
         inFiles = [op.join(raw_fpath,f) for f in file_list if old_filestring in f]
     else:
         inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
     inFiles.sort()
     
+    if subj == '0352':
+        inFiles = [inFiles[0]]
+            
     if not inFiles:
         print('WARNING: NO FILE FOR SUBJ '+subj)
         missing_list += [subj]
         continue
   
-    # Load data (This loop will make sure that split files are read toghether)
+    # Load data (This loop will make sure that split files are read toghether) NB. There shoul not be split files at all!
     for i, fname in enumerate(inFiles):
         print('loading '+str([f for f in inFiles]))
         if i < 1:
@@ -89,7 +97,6 @@ for subj_date in subjects_and_dates:
     # mark channels as bad if necessary - Maybe bad channels can be written to a dict and loaded.
 #        %raw.info['bads'] = ['MEG2332']                         # change for subjects after summer break (08/19)
 #        print (raw.info['bads'])
-
      
     # Filter data
     print('Filtering....')
@@ -98,22 +105,38 @@ for subj_date in subjects_and_dates:
     raw.filter(Filter[0], Filter[1], n_jobs=3, picks=picks_meg)
     
     # Find events and crop data
-    eve = mne.find_events(raw)
+    eve = find_events(raw, stim_channel='STI101')
     
     # Trigger exceptions
     if subj == '0333':                    # Missing triggers
         startSam = 20000+raw.first_samp
         stopSam = 180102+startSam       
-    elif subj == '0525':                 # Missing triggers
-        continue
-    elif subj == '0529':                 # Missing triggers
-        continue
+    elif subj == '0529':                 # Missing stop trigger
+        startSam = eve[eve[:,2] == startTrigger,0][0]
+        stopSam = 180102+startSam    
+    elif subj == '0548':                 # No start trigger. Start trigger val is stop trigger.
+        stopSam = eve[eve[:,2] == startTrigger,0][0]
+        startSam = stopSam-180102               
+    elif subj == '0583':                 # No start trigger. Start trigger val is stop trigger.
+        stopSam = eve[eve[:,2] == startTrigger,0][0]
+        startSam = stopSam-180102                       
+    elif subj == '0590':                 # No start trigger.
+        startSam = raw.first_samp+1000             
+        stopSam = startSam+180102
+    elif subj == '0605':                 # Triggers numbers
+        startSam = eve[eve[:,2] == 14593,0][0]
+        stopSam = eve[eve[:,2] == 14656,0][0]
+    elif subj == '0615':                 # No triggers.
+        startSam = raw.first_samp+10000             
+        stopSam = startSam+180102        
     else:
+        if not len(eve) == 2:
+            trigger_err += [subj]
+            continue
         startSam = eve[eve[:,2] == startTrigger,0][0]
         stopSam = eve[eve[:,2] == stopTrigger,0][0]
     
-    raw.crop(tmin=(startSam - raw.first_samp ) / raw.info['sfreq'],
-             tmax=(stopSam - raw.first_samp ) / raw.info['sfreq'])
+    raw.crop(tmin=(startSam - raw.first_samp ) / raw.info['sfreq'], tmax=(stopSam - raw.first_samp ) / raw.info['sfreq'])
     
     # PSD for diagnostics
     fig = raw.plot_psd(tmax=np.inf, fmax=55, dB=True)
@@ -173,7 +196,7 @@ for subj_date in subjects_and_dates:
     ica.exclude += eog_inds[:n_max_eog]
 
     # Plot EOG ICs for inspection
-    eog_scores_fig = ica.plot_scores(eog_scores, exclude=eog_inds, title='Component score (ecg)', show=True)
+    eog_scores_fig = ica.plot_scores(eog_scores, exclude=eog_inds, title='Component score (EOG)', show=True)
     eog_scores_fig.savefig(op.join(ica_path, 'ICA_eog_comp_score.png'), show=False)
     plt.close()
 
@@ -190,18 +213,10 @@ for subj_date in subjects_and_dates:
     # Apply  ICA to Raw
     raw_ica = ica.apply(raw)
 
-    # Crop data
-    eve = mne.find_events(raw)
-
-
-
-
+    # Save
     raw_ica.save(outfname, overwrite=overwrite_old_files)
 
-
-    plt.close('all')
     print('----------- FINISHED '+subj+' -----------------')
-    
-    
+    plt.close('all')    
 
 #END

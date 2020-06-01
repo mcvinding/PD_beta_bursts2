@@ -8,12 +8,10 @@ import mne
 import sys
 import os.path as op
 sys.path.append('/home/mikkel/PD_longrest/scripts')
-from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, trans_path, old_trans_path, old_subjs
+from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, trans_path, old_trans_path, old_subjs, spacing
 
 #%% Run settings
 overwrite = False
-
-spacing = 'ico4'
 
 no_trans = []
 no_bem = []

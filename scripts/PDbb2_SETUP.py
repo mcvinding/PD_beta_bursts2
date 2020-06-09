@@ -6,27 +6,38 @@ Setup and metavariables for PDbb2. Created on Thu May 14 12:02:50 2020
 """
 import csv
 import os.path as op
+import sys
 
 #%% Paths
-raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
-old_raw_path    = '/archive/20055_parkinson_motor/MEG'
-meg_path        = '/home/mikkel/PD_longrest/meg_data'
-trans_path      = '/home/mikkel/PD_long/trans_files'
-old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
-fs_subjects_dir = '/home/mikkel/PD_long/fs_subjects_dir'
+if sys.platform == 'linux':
+    raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
+    old_raw_path    = '/archive/20055_parkinson_motor/MEG'
+    meg_path        = '/home/mikkel/PD_longrest/meg_data'
+#    trans_path      = '/home/mikkel/PD_long/trans_files'           # !! Files are in subj_folder
+    # old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
+    fs_subjects_dir = '/home/mikkel/PD_long/fs_subjects_dir'
+    subj_data_path  = '/home/mikkel/PD_long/subj_data/'
+else:
+#    raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
+#    old_raw_path    = '/archive/20055_parkinson_motor/MEG'
+    meg_path        = 'X:\\PD_longrest\\script\\meg_data'
+#    trans_path      = 'X:\\PD_longrest\\script\\trans_files'
+    # old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
+    fs_subjects_dir = 'X:\\PD_long\\fs_subjects_dir'
+    subj_data_path  = 'X:\\PD_long\\subj_data'
 
 #%% Read subjects
-subj_file = '/home/mikkel/PD_long/subj_data/subjects_and_dates.csv'
+subj_file = op.join(subj_data_path, 'subjects_and_dates.csv')
 
 with open(subj_file, newline='') as csvfile:
-    tmp = csv.reader(csvfile, delimiter=',', quotechar='"')
+    tmp = csv.reader(csvfile, delimiter=';', quotechar='"')
     subjid = []
     date = []
     is_bb = []
     for ii, row in enumerate(tmp):
-        subjid.append(row[2])
-        date.append(row[3])
-        is_bb.append(row[4])
+        subjid.append(row[1])
+        date.append(row[2])
+        is_bb.append(row[3])
         
 is_bb = [x == '1' for x in is_bb]
 tt = [x == '' for x in date]
@@ -35,7 +46,7 @@ idxer = [a and not b for a, b in zip(is_bb, tt)]
 subjid_flt = [i for (i, v) in zip(subjid, idxer) if v]
 date_flt = [i for (i, v) in zip(date, idxer) if v]
 
-subjects_and_dates = ['NatMEG_'+s+'/'+d for (s, d) in zip(subjid_flt, date_flt)]
+subjects_and_dates = [op.join('NatMEG_'+s, d) for (s, d) in zip(subjid_flt, date_flt)]
 subjects = subjid_flt.copy()
 
 old_subjs = ['0313',

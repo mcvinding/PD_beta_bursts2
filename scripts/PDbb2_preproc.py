@@ -111,6 +111,12 @@ for subj_date in subjects_and_dates:
     if subj == '0333':                    # Missing triggers
         startSam = 20000+raw.first_samp
         stopSam = 180102+startSam       
+    elif subj == '0523':
+        startSam = eve[eve[:,2] == startTrigger,0][0]
+        stopSam = startSam+180102
+    elif subj == '0524':
+        startSam = eve[eve[:,2] == startTrigger,0][0]
+        stopSam = startSam+180102        
     elif subj == '0529':                 # Missing stop trigger
         startSam = eve[eve[:,2] == startTrigger,0][0]
         stopSam = 180102+startSam    

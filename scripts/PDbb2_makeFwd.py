@@ -8,7 +8,7 @@ import mne
 import sys
 import os.path as op
 sys.path.append('/home/mikkel/PD_longrest/scripts')
-from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, trans_path, old_trans_path, old_subjs, spacing
+from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, spacing
 
 #%% Run settings
 overwrite = False
@@ -24,10 +24,7 @@ for subj in subjects:
     sub_mridir = op.join(fs_subjects_dir, subj)
     
     # Input
-    if subj in old_subjs:
-        trans_fname     = op.join(old_trans_path, subj, subj+'-trans.fif')
-    else:
-        trans_fname     = op.join(trans_path, subj+'-trans.fif')
+    trans_fname     = op.join(sub_megdir, subj+'-trans.fif')
     bem_surf_fname  = op.join(sub_mridir, 'bem', 'inner_skull.surf')
     raw_fname       = op.join(sub_megdir, subj+'-ica-raw.fif')
     

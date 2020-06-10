@@ -16,7 +16,7 @@ sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects, meg_path, spacing
 
 #%% Run settings
-overwrite = True
+overwrite = False
 
 #%% Initiate values
 conductivity = (0.3,)                               # for single layer
@@ -28,16 +28,17 @@ lambda2 = 1.0 / snr ** 2
 no_raw = []
 no_cov = []
 no_fwd = []
+
 #%% SUBJECT LOOP HERE ####
 for ii, subj in enumerate(subjects):
-    print(subj)
+    print('NOW PROCESSING: '+subj)
     subj_path   = op.join(meg_path, subj)
     rawfile     = op.join(subj_path, subj+'-ica-raw.fif')
     covfile     = op.join(subj_path, subj+'-cov.fif') 
     fwdfile     = op.join(subj_path, subj+'-'+spacing+'-fwd.fif')
     outfname    = op.join(subj_path, subj+'-dspm')      #NB omit file ending!
     
-    if op.exists(outfname) and not overwrite:
+    if op.exists(outfname+'-lh.stc') and not overwrite:
         print('Output '+outfname+' already exists. Will not overwrite!')
         continue
                      

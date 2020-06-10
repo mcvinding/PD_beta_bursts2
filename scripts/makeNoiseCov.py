@@ -41,18 +41,26 @@ for subj_date in subjects_and_dates:
     # Find files
     file_list = listdir(raw_fpath)
 
-    if subj in old_subjs:
-        inFiles = [op.join(raw_fpath,f) for f in file_list if old_empt_filestring in f]
+    # Errors in raw filenames
+    if subj == '0581': 
+        inFiles = [op.join(raw_fpath,f) for f in file_list if 'empty_room_after_tsss' in f][0] 
+    elif subj in ['0319', '0320', '0398']:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if 'empty_room2_after_tsss' in f][0]
+    elif subj == '0328':
+        inFiles = '/archive/20055_parkinson_motor/MEG/NatMEG_0327/160901/empty_room1_after_tsss.fif'   # Same day
+    elif subj in ['0342','0343']:        
+        inFiles = [op.join(raw_fpath,f) for f in file_list if 'empty_room_12_after_tsss' in f][0] 
+    elif subj in old_subjs:
+        inFiles = [op.join(raw_fpath,f) for f in file_list if old_empt_filestring in f][0]
     else:
-        inFiles = [op.join(raw_fpath,f) for f in file_list if empt_filestring in f]
-    inFiles.sort()
+        inFiles = [op.join(raw_fpath,f) for f in file_list if empt_filestring in f][0]
     
     if not inFiles:
         print('WARNING: NO FILE FOR SUBJ '+subj)
         missing_list += [subj]
         continue
     
-    raw_temp = Raw(inFiles[0], preload=True)
+    raw_temp = Raw(inFiles, preload=True)
     
     # raw_temp.crop(tmin=0, tmax=120)
 

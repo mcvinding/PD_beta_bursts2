@@ -1,19 +1,42 @@
-# Get cortical thickness of ROI (created in petmeg_get_betatrace.py script).
+# Get Freesurfer summary statistics of ROI.
+# @mc_vinding
 
 startdir=$(pwd)
 source /home/mikkel/PD_long/scripts/setUpFreesurfer.sh
 cd $SUBJECTS_DIR
-
-SUBJECTS=('0406' '0525' '0551' '0552' '0560' '0565' '0569' '0584' '0586' '0588')
-
+# Define dirs
 OUTDIR=/home/mikkel/PD_longrest/meg_data
 
+#######################################################################################
+# Define subjects
+SUBJECTS=( $(awk -F "\"*;\"*" '{print $2}' ~/PD_long/subj_data/subjects_and_dates.csv) ); unset 'SUBJECTS[0]' 		# REMOVE header
+INCLUDE=( $(awk -F "\"*;\"*" '{print $4}' ~/PD_long/subj_data/subjects_and_dates.csv) ); unset 'INCLUDE[0]' 		# REMOVE header
+
+# Remove non-included
+DEL=XXXX
+
+for i in "${!INCLUDE[@]}"; do
+   if [ ${INCLUDE[$i]} == "0" ]; then
+   	SUBJECTS[$i]=$DEL
+	fi
+done
+
+SUBJECTS=( "${SUBJECTS[@]/$DEL}" )
+
+#######################################################################################
+# RUN
 for SUB in ${SUBJECTS[@]}; do
 	echo "Processing subject $SUB"
 	SUBDIR=$OUTDIR/$SUB
 	OUTPUTLH=$SUBDIR/$SUB.lh.sensmotor.stats
 
-	echo Label file: $SUB/label/lh.sensmotor.label
+	if [ -f $OUTPUTLH ];	then
+	echo "Output $OUTPUTLH exists. Del to run again!"
+	continue
+	fi
+	
+	# Left hemi
+	echo Label file: $SUBDIR/label/lh.sensmotor.label
 	echo Output file: $OUTPUTLH
 	mris_anatomical_stats \
 		-l $SUB/label/lh.sensmotor.label \
@@ -21,6 +44,7 @@ for SUB in ${SUBJECTS[@]}; do
 		$SUB \
 		lh
 
+	# Right hemi
 	OUTPUTRH=$SUBDIR/$SUB.rh.sensmotor.stats
 	
 	echo Label file: $SUB/label/rh.sensmotor.label
@@ -34,3 +58,5 @@ for SUB in ${SUBJECTS[@]}; do
 done
 
 cd $startdir
+
+#END

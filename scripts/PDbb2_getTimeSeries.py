@@ -15,7 +15,7 @@ from sensorymotorROI import make_sensorymotorROI
 import scipy.io as sio
 
 #%% Run settings
-overwrite = False
+overwrite = True
 
 no_stc = []
 
@@ -59,16 +59,7 @@ for subj in subjects:
         label_tc = stc.extract_label_time_course(lab, src, mode='pca_flip')[0,:]
         label_tc  = np.float64(label_tc)
         
-        # filtc = mne.filter.filter_data(label_tc, 1000, 13, 30, method='fir',n_jobs=3)
-
-        # analytic = hilbert(filtc)
-        # envelope = np.abs(analytic)         
-            
-    # if not op.exists(outhilbt) or overwrite:    
-        # sio.savemat(outhilbt+'-'+hemi+'.mat', dict(envelope=envelope))
-    if not op.exists(outrawtc) or overwrite:
-        sio.savemat(outrawtc+'-'+hemi+'.mat', dict(label_tc=label_tc))
-    # if not op.exists(outrawft) or overwrite:
-        # sio.savemat(outrawft+'-'+hemi+'.mat', dict(filtc=filtc))
+        if not op.exists(outrawtc) or overwrite:
+            sio.savemat(outrawtc+'-'+hemi+'.mat', dict(label_tc=label_tc))
         
 #END

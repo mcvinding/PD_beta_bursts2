@@ -5,16 +5,16 @@ addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
 addpath('/home/mikkel/beta_bursts/functions')
 addpath('/home/mikkel/PD_longrest/scripts/')
-[subjects, megdir] = PDbb2_SETUP();
+[subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 1;   % Overwirte old files 0=false or 1=true
+overwrite = 0;   % Overwirte old files 0=false or 1=true
 
 labels  = {'lh_roi','rh_roi'};
 
 %% Choose threshold
 load('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat')
-cutoff = find_threshold(rhomat, 0:0.1:4, 1); title('med amp')
+cutoff = find_threshold(rhomat, 0:0.1:4, 1); title('Threshold')
 
 %% Get beta summary
 cfg = [];
@@ -35,8 +35,8 @@ for ss = 1:length(subjects)
     burstsummary = [];
     subj = subjects{ss};
     fprintf('Reading subj %s.\n', subj)
-    infile = fullfile(megdir, subj, 'roidata_hlbt.mat');
-    outfname = fullfile(megdir, subj,[subj,'-burstsummary.mat']);
+    infile = fullfile(dirs.megdir, subj, 'roidata_hlbt.mat');
+    outfname = fullfile(dirs.megdir, subj,[subj,'-burstsummary.mat']);
     
     if exist(outfname,'file') && ~overwrite
         warning('File %s exists. Continue!', outfname);

@@ -10,13 +10,13 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, megdir] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 1;   % Overwirte old files 0=false or 1=true
+overwrite = 0;   % Overwirte old files 0=false or 1=true
 
 steps   = 0:0.1:4;
 labels  = {'lh_roi','rh_roi'};
 fsample = 1000; %Hz
 
-%% Find peaks
+%% Run across thrershold to find optimum
 rhomat = zeros(length(subjects),length(steps), 2);
 for ss = 1:length(subjects)
     subj = subjects{ss};
@@ -82,6 +82,6 @@ disp('done')
 
 %% Find cutoff
 
-cutoff_mdamp = find_threshold(rhomat, steps, 1); title('med amp')
+threshold = find_threshold(rhomat, steps, 1); title('Threshold')
 
 %END

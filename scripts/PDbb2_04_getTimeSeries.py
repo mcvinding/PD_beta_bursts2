@@ -8,20 +8,19 @@ import numpy as np
 import os.path as op
 import mne
 import sys
-sys.path.append('/home/mikkel/PD_longrest/scripts')
+sys.path.append('/home/mikkel/PD_longrest/scripts/functions')
 from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, spacing
 from sensorymotorROI import make_sensorymotorROI
-# from scipy.signal import hilbert
 import scipy.io as sio
 
 #%% Run settings
-overwrite = True
+overwrite = False
 
 no_stc = []
 
 #%% Run
 for subj in subjects:
-    print(subj)
+    print('Processing subj '+subj)
     subj_path   = op.join(meg_path, subj)
     rawfile     = op.join(subj_path, subj+'-ica-raw.fif')
     covfile     = op.join(subj_path, subj+'-cov.fif') 
@@ -33,12 +32,12 @@ for subj in subjects:
     outrawtc = op.join(subj_path, subj+'-ts-rawtc')      # Raw time-series
     # outrawft = op.join(subj_path, subj+'-ts-rawft')      # Band-pass filtered time-series
 
-    if op.exists(outrawtc) and not overwrite:
+    if op.exists(outrawtc+'-lh.mat') and not overwrite:
         print('File '+outrawtc+' exists. Continue!')
+        continue
         
     # hilb = dict()
     rawtc = dict()
-    # filtc = dict()
     
     if op.exists(srcfile):
         stc = mne.read_source_estimate(stcfile)

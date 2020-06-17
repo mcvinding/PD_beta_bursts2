@@ -13,7 +13,7 @@ from PDbb2_SETUP import meg_path, fs_subjects_dir, subjects
 # Make sure to give consistent naming when saving -trans files, e.g. "0523-trans.fif"
 
 # Specify subject id
-subj = '0644'
+subj = '0596'
 
 #%% Do coregistration
 print('------------------ Sub: '+subj+' ------------------')

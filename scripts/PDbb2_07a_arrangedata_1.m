@@ -40,6 +40,7 @@ neve_table = table(neve, hemi, subjs);
 
 % Save
 save(fullfile(dirs.group_path, 'neve_table.mat'), 'neve_table');
+save(fullfile(dirs.group_path, 'neve_data.mat'), 'neve', 'hemi','subjs');
 
 %% Event duration
 lenmean1 = zeros(length(subs), 1);   % subjects x number of steps

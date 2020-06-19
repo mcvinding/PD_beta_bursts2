@@ -12,13 +12,13 @@ subj_data <- read.xlsx2('C://Users//Mikkel//Documents//PDbb2//groupanalysis//sub
 subj_data$age <- as.numeric(as.character(subj_data$Age.))
 subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
 subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'Control', "Patient"  ))
-subj_data$id <- as.factor(paste("0", subj_data$Study_id, sep=""))
+subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
 
 # Get "Old" subjects
 # TO DO
 
 # Arrange all subject data
-sdata <- data.frame(id=subj_data$id,
+sdata <- data.frame(subj=subj_data$subj,
                     group=subj_data$group,
                     sex=subj_data$sex,
                     age=subj_data$age)
@@ -28,19 +28,19 @@ sdata <- data.frame(id=subj_data$id,
 # TO DO
 
 # Read N event data
-temp <- readMat("neve_table.mat")
-PDn1 <- temp$PDn1
-PDn2 <- temp$PDn2
-ctrln1 <- temp$ctrln1
-ctrln2 <- temp$ctrln2
-nevent <- c(temp$PDn1,temp$PDn2,temp$ctrln1,temp$ctrln2)
-subs <- unlist(c(temp$PD.subs,temp$PD.subs,temp$ctrl.subs,temp$ctrl.subs))
-group <- c(rep("ptns",2*length(temp$PD.subs)),rep("ctrl",2*length(temp$ctrl.subs)))
-session <- c(rep(c(rep("1",length(temp$PD.subs)), rep("2",length(temp$PD.subs))),2))
+temp <- readMat("neve_data.mat")
+hemi <- unlist(temp$hemi)
+neve <- temp$neve
+subj <- unlist(temp$subjs)
 
-neve.data <- data.frame(nevent=nevent,
-                        subs=subs,
-                        group=group,
-                        session=session)
-
+neve.data <- data.frame(nevent=neve,
+                        subj=subj,
+                        hemi=hemi)
 neve.data$nevent.min <- round(neve.data$nevent/3)
+
+# Merge data frames
+ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
+
+save(ndata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//ndata.Rdata')
+
+

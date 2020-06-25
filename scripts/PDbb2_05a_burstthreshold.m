@@ -7,7 +7,7 @@ addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
 addpath('/home/mikkel/beta_bursts/functions')
 addpath('/home/mikkel/PD_longrest/scripts/')
-[subjects, megdir] = PDbb2_SETUP();
+[subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
 overwrite = 0;   % Overwirte old files 0=false or 1=true
@@ -22,12 +22,12 @@ for ss = 1:length(subjects)
     subj = subjects{ss};
     fprintf('Now loading subj %s...\n', subj)
     % Input
-    infile_rh = fullfile(megdir, subj,[subj,'-ts-rawtc-rh.mat']);
-    infile_lh = fullfile(megdir, subj,[subj,'-ts-rawtc-lh.mat']);
+    infile_rh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc-rh.mat']);
+    infile_lh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc-lh.mat']);
     
     % Output
-    outfname_raw = fullfile(megdir, subj, 'roidata.mat');
-    outfname_hlb = fullfile(megdir, subj, 'roidata_hlbt.mat');
+    outfname_raw = fullfile(dirs.meg_path, subj, 'roidata.mat');
+    outfname_hlb = fullfile(dirs.meg_path, subj, 'roidata_hlbt.mat');
         
     % Load data
     load(infile_rh);

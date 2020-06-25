@@ -9,10 +9,10 @@ load('X://PD_longrest//groupanalysis//ndata.Rdata')
 
 ## Quick analysis
 
-nmod <- glmer(nevent.min ~ I(age-mean(age)) * sex * group + (1|hemi) + (1|subj), data=ndata, family=poisson)
+nmod <- lmer(nevent.min ~  I(age-mean(age)) * sex * group + I(thick-mean(thick))*I(age-mean(age))*group + (1|hemi) + (1|subj), data=ndata)
 nmod.x3 <- lmer(nevent.min ~ I(age-mean(age)) * sex * group + (1|hemi) + (1|subj), data=ndata)
 
-nplot <- ggplot(aes(x=age, y=nevent.min, color=group, shape=sex), data=ndata)+
+nplot <- ggplot(aes(x=thick, y=nevent, color=group, shape=sex), data=ndata)+
   geom_point()+
   geom_smooth(method=lm)
 nplot

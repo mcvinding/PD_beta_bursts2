@@ -35,8 +35,8 @@ for ss = 1:length(subjects)
     burstsummary = [];
     subj = subjects{ss};
     fprintf('Reading subj %s.\n', subj)
-    infile = fullfile(dirs.megdir, subj, 'roidata_hlbt.mat');
-    outfname = fullfile(dirs.megdir, subj,[subj,'-burstsummary.mat']);
+    infile = fullfile(dirs.meg_path, subj, 'roidata_hlbt.mat');
+    outfname = fullfile(dirs.meg_path, subj,[subj,'-burstsummary.mat']);
     
     if exist(outfname,'file') && ~overwrite
         warning('File %s exists. Continue!', outfname);

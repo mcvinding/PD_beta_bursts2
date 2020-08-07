@@ -125,10 +125,10 @@ for ii = 1:length(subjects)
 end
 
 maxeve  = [max_lh; max_rh];
-hemi    = cat(1, repmat({'lh'}, size(toe_lh)), repmat({'rh'}, size(max_rh)));
+hemi    = cat(1, repmat({'lh'}, size(max_lh)), repmat({'rh'}, size(max_rh)));
 subjs   = [sub_lh; sub_rh];
 
 % Save for export
-save(fullfile(dirs.group_path, 'maxeve_data.mat'), 'toeeve', 'hemi','subjs');
+save(fullfile(dirs.group_path, 'maxeve_data.mat'), 'maxeve', 'hemi','subjs');
 
 % END

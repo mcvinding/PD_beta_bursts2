@@ -143,7 +143,7 @@ tdata <- merge(toe.data, sdata, by="subj", all=FALSE)
 tdata <- merge(tdata, roi.thick, by=c("subj", "hemi"))
 
 # Save
-save(mdata, file='X://PD_longrest//groupanalysis//mdata.Rdata')
-write.csv(mdata, file='X://PD_longrest//groupanalysis//mdata.csv')
+save(tdata, file='X://PD_longrest//groupanalysis//tdata.Rdata')
+write.csv(tdata, file='X://PD_longrest//groupanalysis//tdata.csv')
 
 #END

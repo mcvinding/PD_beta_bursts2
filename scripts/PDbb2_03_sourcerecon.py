@@ -30,7 +30,7 @@ no_cov = []
 no_fwd = []
 
 #%% SUBJECT LOOP HERE ####
-for ii, subj in enumerate(subjects):
+for subj in subjects:
     print('NOW PROCESSING: '+subj)
     subj_path   = op.join(meg_path, subj)
     rawfile     = op.join(subj_path, subj+'-ica-raw.fif')

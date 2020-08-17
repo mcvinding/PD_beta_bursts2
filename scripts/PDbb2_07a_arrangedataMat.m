@@ -1,4 +1,4 @@
-% Get various summaries of beta burst (explorative)
+½% Get various summaries of beta burst (explorative)
 clear all
 close all
 addpath('/home/mikkel/fieldtrip/fieldtrip/')

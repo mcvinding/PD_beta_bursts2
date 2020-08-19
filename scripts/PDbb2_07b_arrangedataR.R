@@ -39,7 +39,11 @@ check.data <- subset(check.data, rest_ec==1)
 sdata <- subset(sdata, sdata$subj %in% check.data$id)
 
 # Save
-save(ndata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
+save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
+
+# Reload
+load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
+
 
 ## IMPORT FS ROI STATS
 roi.lh.thick <- data.frame(subj=sdata$subj,
@@ -62,14 +66,21 @@ for (ii in 1:length(sdata$subj)){
 }
 
 roi.thick <- rbind(roi.lh.thick, roi.rh.thick)
+roi.thick$hemi <- as.factor(roi.thick$hemi)
+
+# Save
+save(roi.thick, file='X://PD_longrest//groupanalysis//thickdata.Rdata')
+
+# Reload
+load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 
 
 ## IMPORT N EVENT DATA
 # Read N event data
 temp <- readMat("neve_data.mat")
-hemi <- unlist(temp$hemi)
+hemi <- as.factor(unlist(temp$hemiN))
 neve <- temp$neve
-subj <- unlist(temp$subjs)
+subj <- as.factor(unlist(temp$subjsN))
 
 neve.data <- data.frame(nevent=neve,
                         subj=subj,
@@ -81,16 +92,15 @@ ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
 ndata <- merge(ndata, roi.thick, by=c("subj", "hemi"))
 
 # Save
-# save(ndata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//ndata.Rdata')
 save(ndata, file='X://PD_longrest//groupanalysis//ndata.Rdata')
 write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata.csv')
 
 ## IMPORT EVENT LENGTH DATA
 # Read event length data
 temp <- readMat("leneve_data.mat")
-hemi <- unlist(temp$hemi)
+hemi <- as.factor(unlist(temp$hemi))
 leneve <- temp$leneve
-subj <- unlist(temp$subjs)
+subj <- as.factor(unlist(temp$subjs))
 
 len.data <- data.frame(leneve=leneve,
                        subj=subj,
@@ -109,9 +119,9 @@ write.csv(ldata, file='X://PD_longrest//groupanalysis//ldata.csv')
 ## IMPORT EVENT POW DATA
 # Read event power data
 temp <- readMat("maxeve_data.mat")
-hemi <- unlist(temp$hemi)
+hemi <- as.factor(unlist(temp$hemi))
 maxeve <- temp$maxeve
-subj <- unlist(temp$subj)
+subj <- as.factor(unlist(temp$subj))
 
 max.data <- data.frame(maxeve=maxeve,
                        subj=subj,
@@ -128,15 +138,15 @@ write.csv(mdata, file='X://PD_longrest//groupanalysis//mdata.csv')
 ## IMPORT EVENT INTERVAL DATA
 # Read event interval data
 temp <- readMat("toeeve_data.mat")
-hemi <- unlist(temp$hemi)
+hemi <- as.factor(unlist(temp$hemi))
 toeeve <- temp$toeeve
-subj <- unlist(temp$subjs)
+subj <- as.factor(unlist(temp$subjs))
 
 toe.data <- data.frame(toeeve=toeeve,
                        subj=subj,
                        hemi=hemi)
 
-toe.data$toeeve.ms <- toe.data$toeeve*1000      
+toe.data$toeeve.ms <- toe.data$toeeve*1000
 
 # Merge data frames
 tdata <- merge(toe.data, sdata, by="subj", all=FALSE)
@@ -145,5 +155,23 @@ tdata <- merge(tdata, roi.thick, by=c("subj", "hemi"))
 # Save
 save(tdata, file='X://PD_longrest//groupanalysis//tdata.Rdata')
 write.csv(tdata, file='X://PD_longrest//groupanalysis//tdata.csv')
+
+
+# MERGE ALL
+
+bbdata <- data.frame(leneve=leneve,
+                     toeeve=toeeve,
+                     maxeve=maxeve,
+                     subj=subj,
+                     hemi=hemi)
+
+bbdata <- merge(bbdata, sdata, by="subj", all=FALSE)
+bbdata <- merge(bbdata, roi.thick, by=c("subj", "hemi"))
+bbdata$leneve.ms <- bbdata$leneve*1000
+bbdata$toeeve.ms <- bbdata$toeeve*1000
+
+# Save
+save(bbdata, file='X://PD_longrest//groupanalysis//bbdata.Rdata')
+write.csv(bbdata, file='X://PD_longrest//groupanalysis//bbdata.csv')
 
 #END

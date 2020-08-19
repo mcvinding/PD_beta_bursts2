@@ -1,4 +1,4 @@
-½% Get various summaries of beta burst (explorative)
+% Get various summaries of beta burst (explorative)
 clear all
 close all
 addpath('/home/mikkel/fieldtrip/fieldtrip/')
@@ -10,10 +10,20 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 %% N events
 nevent_lh = nan(length(subjects), 1);
 nevent_rh = nan(length(subjects), 1);
+len_lh = [];
+len_rh = [];
+sub_lh = [];
+sub_rh = [];
+toe_lh = [];
+toe_rh = [];
+% sub_lhT = [];
+% sub_rhT = [];
+max_lh = [];
+max_rh = [];
 
 for ii = 1:length(subjects)
     subj = subjects{ii};
-    disp(subj);
+    fprintf('Reading subj %s (%i of %i)\n', subj, ii, length(subjects))
     load(fullfile(dirs.meg_path, subj, [subj,'-burstsummary.mat']))
       
     % N events
@@ -21,58 +31,14 @@ for ii = 1:length(subjects)
     nevent_rh(ii) = burstsummary{2}.n_events;
     
     % Event duration
-end
-
-% Arrange data
-neve    = [nevent_lh; nevent_rh];
-hemi    = cat(1, repmat({'lh'}, size(subjects)), repmat({'rh'}, size(subjects)));
-subjs   = [subjects; subjects];
-% neve_table = table(neve, hemi, subjs);
-
-% Save
-% save(fullfile(dirs.group_path, 'neve_table.mat'), 'neve_table');
-save(fullfile(dirs.group_path, 'neve_data.mat'), 'neve', 'hemi','subjs');
-
-%% Event duration
-clear hemi subjs
-len_lh = [];
-len_rh = [];
-sub_lh = [];
-sub_rh = [];
-
-for ii = 1:length(subjects)
-    subj = subjects{ii};
-    disp(subj);
-    load(fullfile(dirs.meg_path, subj, [subj,'-burstsummary.mat']))
+        % Event duration
+    len_lh = [len_lh; burstsummary{1}.bdat.evelen(1:end-1)];
+    len_rh = [len_rh; burstsummary{2}.bdat.evelen(1:end-1)];
     
-    len_lh = [len_lh; burstsummary{1}.bdat.evelen];
-    len_rh = [len_rh; burstsummary{2}.bdat.evelen];
+    sub_lh = [sub_lh; repmat(subj,length(burstsummary{1}.bdat.evelen)-1, 1)];
+    sub_rh = [sub_rh; repmat(subj,length(burstsummary{2}.bdat.evelen)-1, 1)];
     
-    sub_lh = [sub_lh; repmat(subj,length(burstsummary{1}.bdat.evelen),1)];
-    sub_rh = [sub_rh; repmat(subj,length(burstsummary{2}.bdat.evelen),1)];
-
-end
-
-% Arrange data
-leneve  = [len_lh; len_rh];
-hemi    = cat(1, repmat({'lh'}, size(len_lh)), repmat({'rh'}, size(len_rh)));
-subjs   = [sub_lh; sub_rh];
-
-% Save for export
-save(fullfile(dirs.group_path, 'leneve_data.mat'), 'leneve', 'hemi','subjs');
-
-%% Time to next event
-clear hemi subjs
-toe_lh = [];
-toe_rh = [];
-sub_lh = [];
-sub_rh = [];
-
-for ii = 1:length(subjects)
-    subj = subjects{ii};
-    disp(subj);
-    load (fullfile(dirs.meg_path, subj, [subj,'-burstsummary.mat']))
-    
+    % Time between events
     tt_lh = zeros(length(burstsummary{1}.bdat.event-1)-1,1);
     tt_rh = zeros(length(burstsummary{2}.bdat.event-1)-1,1);
 
@@ -87,48 +53,32 @@ for ii = 1:length(subjects)
     toe_lh = [toe_lh; tt_lh];
     toe_rh = [toe_rh; tt_rh];
     
-    sub_lh = [sub_lh; repmat(subj, length(tt_lh),1)];
-    sub_rh = [sub_rh; repmat(subj, length(tt_rh),1)];
+%     sub_lhT = [sub_lhT; repmat(subj, length(tt_lh),1)];
+%     sub_rhT = [sub_rhT; repmat(subj, length(tt_rh),1)];
+    
+    % Max peak
+    max_lh = [max_lh; burstsummary{1}.bdat.maxpk(1:end-1)];
+    max_rh = [max_rh; burstsummary{2}.bdat.maxpk(1:end-1)];
+
 end
 
-% Arrange data
+%% Arrange data
+neve    = [nevent_lh; nevent_rh];
+hemiN   = cat(1, repmat({'lh'}, size(subjects)), repmat({'rh'}, size(subjects)));
+subjsN  = [subjects; subjects];
+leneve  = [len_lh; len_rh];
+hemi    = cat(1, repmat({'lh'}, size(len_lh)), repmat({'rh'}, size(len_rh)));
+subjs   = [sub_lh; sub_rh];
 toeeve  = [toe_lh; toe_rh];
-hemi    = cat(1, repmat({'lh'}, size(toe_lh)), repmat({'rh'}, size(toe_rh)));
-subjs   = [sub_lh; sub_rh];
-
-% Save for export
-save(fullfile(dirs.group_path, 'toeeve_data.mat'), 'toeeve', 'hemi','subjs');
-
-%% Max peak in events
-clear hemi subjs
-max_lh = [];
-max_rh = [];
-sub_lh = [];
-sub_rh = [];
-
-for ii = 1:length(subjects)
-    subj = subjects{ii};
-    disp(subj);
-    load (fullfile(dirs.meg_path, subj, [subj,'-burstsummary.mat']))
-    
-    max_lh = [max_lh; burstsummary{1}.bdat.maxpk];
-    max_rh = [max_rh; burstsummary{2}.bdat.maxpk];
-    
-    sub_lh = [sub_lh; repmat(subj,length(burstsummary{1}.bdat.maxpk),1)];
-    sub_rh = [sub_rh; repmat(subj,length(burstsummary{2}.bdat.maxpk),1)];
-
-    % Save pkidx for reading and plotting
-    maxidx_lh = burstsummary{1}.bdat.maxidx;
-    maxidx_rh = burstsummary{2}.bdat.maxidx;
-    save(fullfile(dirs.meg_path, subj, 'pkidx_lh.mat'), 'maxidx_lh')
-    save(fullfile(dirs.meg_path, subj, 'pkidx_rh.mat'), 'maxidx_rh')
-end
-
+% hemiT   = cat(1, repmat({'lh'}, size(toe_lh)), repmat({'rh'}, size(toe_rh)));
+% subjsT  = [sub_lhT; sub_rhT];
 maxeve  = [max_lh; max_rh];
-hemi    = cat(1, repmat({'lh'}, size(max_lh)), repmat({'rh'}, size(max_rh)));
-subjs   = [sub_lh; sub_rh];
 
-% Save for export
+% Save
+save(fullfile(dirs.group_path, 'neve_data.mat'), 'neve', 'hemiN','subjsN');
+save(fullfile(dirs.group_path, 'leneve_data.mat'), 'leneve', 'hemi','subjs');
+save(fullfile(dirs.group_path, 'toeeve_data.mat'), 'toeeve', 'hemi','subjs');
 save(fullfile(dirs.group_path, 'maxeve_data.mat'), 'maxeve', 'hemi','subjs');
+disp('done')
 
-% END
+%END

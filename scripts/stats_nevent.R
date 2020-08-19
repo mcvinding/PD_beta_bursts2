@@ -2,6 +2,10 @@
 library(lme4)
 library(arm)
 library(ggplot2)
+library(BayesFactor)
+library(brms)
+Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";")) # Needed or there will be a pop-up everytime compiling C models.
+Sys.setenv(BINPREF = "C:/Rtools/mingw_$(WIN)/bin/")
 # Bayes?
 
 ## Load data
@@ -9,12 +13,155 @@ load('X://PD_longrest//groupanalysis//ndata.Rdata')
 
 ## Center variables
 ndata$age.centerd <- ndata$age-mean(ndata$age)
+ndata$age.min <- ndata$age-min(ndata$age)
+
 ndata$thick.centerd <- ndata$thick-mean(ndata$thick)
 
 # * age
 # * thickness
 
 ## Polynomial variables
+
+
+tstmod.a <- glm(nevent.min ~ age + I(age^2) +
+                   group +  sex + 
+                   group:sex +
+                   group:age +
+                   sex:age +
+                   group:sex:age +
+                   group:I(age^2) +
+                   sex:I(age^2) +
+                   group:sex:I(age^2),  
+                   data=ndata, subset=hemi=='lh',family=poisson)
+
+nlh <- subset(ndata, hemi=='lh')
+tmod <- glm(nevent.min ~ I(age.centerd^2)*sex*group+age*sex*group, data=nlh, family=poisson)
+nmod <- glm(nevent     ~ I(age.centerd^2)*sex*group+age*sex*group, data=nlh, family=poisson)
+
+nlh$pred <- exp(predict(nmod, re.form=NA))
+
+ggplot(aes(x=age, y=nevent, color=group, shape=sex), data=nlh)+
+  geom_point()+
+  geom_line(aes(y = pred), size = 1)
+
+tstmod.a <- lm(nevent.min ~ age + I(age^2) +
+                  group +  sex + 
+                  group:sex +
+                  group:age +
+                  sex:age +
+                  group:sex:age +
+                  group:I(age^2) +
+                  sex:I(age^2) +
+                  group:sex:I(age^2),
+                data=nlh, subset=hemi=='lh')
+
+tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age^2))
+tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age^2))
+tstmod2.3 <- update(tstmod2.2, ~. -group:I(age^2))
+tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age)
+tstmod2.5 <- update(tstmod2.4, ~. -sex:age)
+tstmod2.6 <- update(tstmod2.5, ~. -group:age)
+tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
+tstmod2.8 <- update(tstmod2.7, ~. -sex)
+tstmod2.9 <- update(tstmod2.8, ~. -group)
+tstmod2.10 <- update(tstmod2.9, ~. -I(age^2))
+tstmod2.11 <- update(tstmod2.10, ~. -age)
+
+anova(tstmod2.10,
+      tstmod2.9,
+      tstmod2.8, 
+      tstmod2.7, 
+      tstmod2.6, 
+      tstmod2.5, 
+      tstmod2.4, 
+      tstmod2.3, 
+      tstmod2.2,
+      tstmod2.1,
+      tstmod.a)
+
+# BAYES
+# BF
+
+a.a <- lmBF(nevent ~ age + group +  sex + 
+              group:sex +
+              group:age +
+              sex:age +
+              group:sex:age, 
+            data = nlh)
+a.b <- lmBF(nevent ~ age + group +  sex + 
+              group:sex +
+              group:age +
+              sex:age, 
+            data = nlh)
+a.c <- lmBF(nevent ~ age + group +  sex + 
+              group:sex +
+              group:age, 
+            data = nlh)
+a.d <- lmBF(nevent ~ age + group +  sex + 
+              group:sex, 
+            data = nlh)
+a.e <- lmBF(nevent ~ age + group +  sex, 
+            data = nlh)
+a.f <- lmBF(nevent ~ age + group, 
+            data = nlh)
+a.g <- lmBF(nevent ~ age, 
+            data = nlh)
+
+
+t.a <- lmBF(nevent ~ thick + group +  sex + 
+              group:sex +
+              group:thick +
+              sex:thick +
+              group:sex:thick, 
+            data = nlh)
+t.b <- lmBF(nevent ~ thick + group +  sex + 
+              group:sex +
+              group:thick +
+              sex:thick, 
+            data = nlh)
+t.c <- lmBF(nevent ~ thick + group +  sex + 
+              group:sex +
+              group:thick, 
+            data = nlh)
+t.d <- lmBF(nevent ~ thick + group +  sex + 
+              group:sex, 
+            data = nlh)
+t.e <- lmBF(nevent ~ thick + group +  sex, 
+            data = nlh)
+t.f <- lmBF(nevent ~ thick + group, 
+            data = nlh)
+t.g <- lmBF(nevent ~ thick, 
+            data = nlh)
+
+## brms
+set.seed(666)
+brmod.a <- brm(nevent ~ age + I(age^2) + group +  sex + 
+                  group:sex +
+                  group:age +
+                  sex:age +
+                  group:sex:age +
+                  group:I(age^2) +
+                  sex:I(age^2) +
+                  group:sex:I(age^2),
+                data=nlh, family=poisson,
+                save_all_pars = TRUE, iter = 1000)
+
+brmod.b <- brm(nevent ~ age + I(age^2) + group +  sex + 
+                  group:sex +
+                  group:age +
+                  sex:age +
+                  group:sex:age +
+                  group:I(age^2) +
+                  sex:I(age^2),
+                data=nlh, family=poisson,
+                save_all_pars = TRUE, iter = 1000)
+
+br.nev2 <- brm(nevent.min ~ group+session+(1|subs), data = neve.data, family = poisson, 
+               save_all_pars = TRUE, iter = 5000)
+br.nev1 <- brm(nevent.min ~ session+(1|subs), data = neve.data, family = poisson, 
+               save_all_pars = TRUE, iter = 5000)
+br.nev0 <- brm(nevent.min ~ 1+(1|subs), data = neve.data, family = poisson, 
+               save_all_pars = TRUE, iter = 5000)
 
 ## Quick analysis
 ### 3rd degree 

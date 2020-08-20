@@ -4,8 +4,8 @@ library(arm)
 library(ggplot2)
 library(BayesFactor)
 library(brms)
-Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";")) # Needed or there will be a pop-up everytime compiling C models.
-Sys.setenv(BINPREF = "C:/Rtools/mingw_$(WIN)/bin/")
+# Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";")) # Needed or there will be a pop-up everytime compiling C models.
+# Sys.setenv(BINPREF = "C:/Rtools/mingw_$(WIN)/bin/")
 # Bayes?
 
 ## Load data
@@ -35,6 +35,7 @@ tstmod.a <- glm(nevent.min ~ age + I(age^2) +
                    data=ndata, subset=hemi=='lh',family=poisson)
 
 nlh <- subset(ndata, hemi=='lh')
+
 tmod <- glm(nevent.min ~ I(age.centerd^2)*sex*group+age*sex*group, data=nlh, family=poisson)
 nmod <- glm(nevent     ~ I(age.centerd^2)*sex*group+age*sex*group, data=nlh, family=poisson)
 

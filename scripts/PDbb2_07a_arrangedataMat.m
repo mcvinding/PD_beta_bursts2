@@ -20,12 +20,18 @@ toe_rh = [];
 % sub_rhT = [];
 max_lh = [];
 max_rh = [];
+cut = nan(length(subjects),2);
 
 for ii = 1:length(subjects)
     subj = subjects{ii};
     fprintf('Reading subj %s (%i of %i)\n', subj, ii, length(subjects))
     load(fullfile(dirs.meg_path, subj, [subj,'-burstsummary.mat']))
-      
+    
+    % Cut off
+    cut(ii,1) = burstsummary{1}.cutoff;
+    cut(ii,2) = burstsummary{2}.cutoff;
+end
+
     % N events
     nevent_lh(ii) = burstsummary{1}.n_events;
     nevent_rh(ii) = burstsummary{2}.n_events;

@@ -6,6 +6,7 @@ folder for inspection.
 @author: mikkel
 """
 import matplotlib.pyplot as plt
+import mne
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from mne.io import read_raw_fif
 from mne import pick_types, find_events
@@ -94,9 +95,17 @@ for subj_date in subjects_and_dates:
         else:
             raw.append(read_raw_fif(fname, preload=True))
             
+    # Initial cleaning
     # mark channels as bad if necessary - Maybe bad channels can be written to a dict and loaded.
-#        %raw.info['bads'] = ['MEG2332']                         # change for subjects after summer break (08/19)
-#        print (raw.info['bads'])
+          
+    # chpi_amp = mne.chpi.compute_chpi_amplitudes(raw)
+    # chpi_locs = mne.chpi.compute_chpi_locs(raw, 'times')
+    # head_pos = mne.chpi.compute_head_pos(raw.info)            
+    # mean_distance_limit = .0015  # in meters
+    # annotation_movement, hpi_disp = annotate_movement(
+    #     raw, head_pos, mean_distance_limit=mean_distance_limit)
+    # raw.set_annotations(annotation_movement)
+    # raw.plot(n_channels=100, duration=20)            
      
     # Filter data
     print('Filtering....')
@@ -152,7 +161,7 @@ for subj_date in subjects_and_dates:
     # RUN ICA
     ica = ICA(n_components=0.95, method='fastica', random_state=0)
 
-    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True)
+    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True, reject_by_annotation =True)
 #    ica.labels_ = dict()        
     
     # Plot and save

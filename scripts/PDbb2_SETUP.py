@@ -82,7 +82,9 @@ old_empt_filestring = 'empty_room2_before_tsss'
 
 exceptions = {
     '0582':'rest_ec_tsss.fif',              # No cHPI
-    '0604':'rest_ec_tsss_mc.fif'            # Error due to too many 'autobad' channels. Manual MaxFilter.
+    '0604':'rest_ec_tsss_mc.fif',           # Error due to too many 'autobad' channels. Manual MaxFilter.
+    '0322':'rest_eo2_mc_trans_tsss',        # Wrong filename during recording
+    '0352':'rest_ec_2_mc_trans_tsss_max95'  # Multiple MaxFilter files
     }
 
 

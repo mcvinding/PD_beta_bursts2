@@ -1,8 +1,7 @@
 % First find common threshold for defining beta bursts. The napply threshold 
 % to individual data.
 % set paths
-clear all
-close all
+clear all; close all;
 addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
 addpath('/home/mikkel/beta_bursts/functions')

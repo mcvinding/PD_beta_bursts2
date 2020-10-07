@@ -36,5 +36,3 @@ mne.gui.coregistration(subject=subj, subjects_dir=fs_subjects_dir, head_high_res
 #                       surfaces='head-dense')
 
 #END
-
-#END

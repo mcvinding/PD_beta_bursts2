@@ -6,8 +6,8 @@ folder for inspection.
 @author: mikkel
 """
 import matplotlib.pyplot as plt
-import mne
-from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
+#import mne
+from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA, annotate_muscle_zscore
 from mne.io import read_raw_fif
 from mne import pick_types, find_events
 from os import listdir, mkdir
@@ -18,10 +18,14 @@ sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring, old_subjs, old_raw_path, old_filestring
 
 # %% run options
-overwrite_old_files = False     # Wheter files should be overwritten if already exist
+overwrite_old_files = True     # Wheter files should be overwritten if already exist
+
+# Muscle artefact detection
+threshold_muscle = 6  # z-score
 
 # bandpass filter
-Filter = [None, 45]
+bandpass_freqs = [None, 48]
+notch_freqs = [50, 100, 150]
 
 # Number of components to reject
 n_max_ecg = 3
@@ -36,8 +40,9 @@ startTrigger = 1
 stopTrigger  = 64
     
 # For debugging/diagnostics
-missing_list = []
-trigger_err = []
+missing_list=[]
+error_list=[]
+trigger_err=[]
 
 #%% RUN
 for subj_date in subjects_and_dates:   
@@ -71,50 +76,52 @@ for subj_date in subjects_and_dates:
     file_list = listdir(raw_fpath)
     if subj in exceptions:
         inFiles = [op.join(raw_fpath,f) for f in file_list if exceptions[subj] in f]
-    elif subj == '0322':
-        inFiles = [op.join(raw_fpath,f) for f in file_list if 'rest_eo2_mc_trans_tsss' in f]
     elif subj in old_subjs:
         inFiles = [op.join(raw_fpath,f) for f in file_list if old_filestring in f]
     else:
         inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
-    inFiles.sort()
-    
-    if subj == '0352':
-        inFiles = [inFiles[0]]
-            
-    if not inFiles:
-        print('WARNING: NO FILE FOR SUBJ '+subj)
-        missing_list += [subj]
-        continue
+        
+#    # Debug
+#    if len(inFiles)>1:
+#        print('WARNING: TOO MANYE FILEs FOR SUBJ '+subj)
+#        error_list +=  [subj]        
+#    elif not inFiles:
+#        print('WARNING: NO FILE FOR SUBJ '+subj)
+#        missing_list += [subj]
+#        continue
   
-    # Load data (This loop will make sure that split files are read toghether) NB. There shoul not be split files at all!
-    for i, fname in enumerate(inFiles):
-        print('loading '+str([f for f in inFiles]))
-        if i < 1:
-            raw = read_raw_fif(fname, preload=True)
-        else:
-            raw.append(read_raw_fif(fname, preload=True))
-            
+    # Load data (This loop will make sure that split files are read toghether)
+    fname = inFiles[0]
+    raw = read_raw_fif(fname, preload=True)
+                    
     # Initial cleaning
-    # mark channels as bad if necessary - Maybe bad channels can be written to a dict and loaded.
-          
-    # chpi_amp = mne.chpi.compute_chpi_amplitudes(raw)
-    # chpi_locs = mne.chpi.compute_chpi_locs(raw, 'times')
-    # head_pos = mne.chpi.compute_head_pos(raw.info)            
-    # mean_distance_limit = .0015  # in meters
-    # annotation_movement, hpi_disp = annotate_movement(
-    #     raw, head_pos, mean_distance_limit=mean_distance_limit)
-    # raw.set_annotations(annotation_movement)
-    # raw.plot(n_channels=100, duration=20)            
-     
+    annot_muscle, scores_muscle = annotate_muscle_zscore(raw, ch_type="mag", threshold=threshold_muscle, min_length_good=0.2)
+    # Plot as save for inspection
+    fig, ax = plt.subplots()
+    ax.plot(raw.times, scores_muscle)
+    ax.axhline(y=threshold_muscle, color='r')
+    ax.set(xlabel='time, (s)', ylabel='zscore', title='Muscle activity')
+    fig.savefig(op.join(ica_path,'muscle_artefact.png'))
+    plt.close()
+    
+    raw.set_annotations(annot_muscle)
+    
+#    # Inspect
+#    raw.plot()
+        
     # Filter data
     print('Filtering....')
     picks_meg = pick_types(raw.info, meg=True, eeg=False, eog=False, emg=False, misc=False, 
                            stim=False, exclude='bads')
-    raw.filter(Filter[0], Filter[1], n_jobs=3, picks=picks_meg)
+    raw.notch_filter(notch_freqs, n_jobs=3, picks=picks_meg)                    # Remove residual linenoise
+    raw.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
+
     
     # Find events and crop data
     eve = find_events(raw, stim_channel='STI101')
+    
+#    # Inspect
+#    raw.plot(eve)
     
     # Trigger exceptions
     if subj == '0333':                    # Missing triggers
@@ -173,7 +180,7 @@ for subj_date in subjects_and_dates:
 
     # REMOVE COMPONENTS
     picks_eXg = pick_types(raw.info, meg=False, eeg=False, eog=True, ecg = True, emg=False, misc=False, stim=False, exclude='bads')
-    raw.filter(Filter[0], Filter[1], n_jobs=3, picks=picks_eXg)
+    raw.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_eXg)
     raw.notch_filter(50, n_jobs=3, picks=picks_eXg)             # Remove residual 50Hz line noise
     
     # Find ECG artifacts
@@ -227,6 +234,9 @@ for subj_date in subjects_and_dates:
             
     # Apply  ICA to Raw
     raw_ica = ica.apply(raw)
+    
+#    # Inspect
+#    raw_ica.plot(eve)
 
     # Save
     raw_ica.save(outfname, overwrite=overwrite_old_files)

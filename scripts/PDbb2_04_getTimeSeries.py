@@ -9,12 +9,13 @@ import os.path as op
 import mne
 import sys
 sys.path.append('/home/mikkel/PD_longrest/scripts/')
+sys.path.append('/home/mikkel/PD_longrest/scripts/functions')
 from PDbb2_SETUP import subjects, meg_path, fs_subjects_dir, spacing
 from sensorymotorROI import make_sensorymotorROI
 import scipy.io as sio
 
 #%% Run settings
-overwrite = False
+overwrite = True
 
 no_stc = []
 

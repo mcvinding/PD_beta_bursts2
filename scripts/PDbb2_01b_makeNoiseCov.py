@@ -8,14 +8,18 @@ Make noise convariance matrix from empty room data
 import os.path as op
 from os import listdir
 from mne.io import Raw
-from mne import compute_raw_covariance, write_cov
+from mne import compute_raw_covariance, write_cov, pick_types
 import matplotlib.pyplot as plt
 import sys
 sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects_and_dates, meg_path, raw_path, old_raw_path, old_subjs, empt_filestring, old_empt_filestring
 
 #%% Run options
-overwrite = False      # Wheter files should be overwritten if already exist
+overwrite = True      # Wheter files should be overwritten if already exist
+
+# Filter options
+bandpass_freqs = [None, 48]
+notch_freqs = [50, 100, 150]
 
 # Missing list for debugging/diagnostics
 missing_list = []
@@ -62,7 +66,12 @@ for subj_date in subjects_and_dates:
     
     raw_temp = Raw(inFiles, preload=True)
     
-    # raw_temp.crop(tmin=0, tmax=120)
+    # Filter data
+    print('Filtering....')
+    picks_meg = pick_types(raw_temp.info, meg=True, eeg=False, eog=False, emg=False, misc=False, 
+                           stim=False, exclude='bads')
+    raw_temp.notch_filter(notch_freqs, n_jobs=3, picks=picks_meg)
+    raw_temp.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
 
     # Estimate cov
     noise_cov = compute_raw_covariance(raw_temp, tmin=0, tmax=120)

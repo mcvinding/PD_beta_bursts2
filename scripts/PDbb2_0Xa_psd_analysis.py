@@ -16,10 +16,6 @@ import matplotlib.pyplot as plt
 #%% Settings
 overwrite = False
 
-
-
-
-
 #%% RUN
 
 for subj in subjects:

@@ -36,7 +36,8 @@ for subj_date in subjects_and_dates:
         raw_fpath = op.join(raw_path, subj_date)
 
     fig_path = op.join(meg_path, subj, 'ica')
-    outFname = op.join(meg_path, subj, subj+'-cov.fif')         #Covfefe
+    outFname = op.join(meg_path, subj, subj+'-cov.fif')
+    outTemp  = op.join(meg_path, subj, subj+'-empt-raw.fif')
         
     if op.exists(outFname) and not overwrite:
         print('Do not overwrite cov file')
@@ -72,10 +73,13 @@ for subj_date in subjects_and_dates:
                            stim=False, exclude='bads')
     raw_temp.notch_filter(notch_freqs, n_jobs=3, picks=picks_meg)
     raw_temp.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
+    
+    # Load ICA
+    # ...
 
     # Estimate cov
-    noise_cov = compute_raw_covariance(raw_temp, tmin=0, tmax=120)
-    
+    noise_cov = compute_raw_covariance(raw_temp, tmin=0, tmax=120, rank='info')
+
     # Plot for inspection
     cov_fig = noise_cov.plot(raw_temp.info)
     [fig.savefig(op.join(fig_path,'cov'+str(i)+'.png')) for i, fig in enumerate(cov_fig)]
@@ -83,5 +87,6 @@ for subj_date in subjects_and_dates:
     
     # Save
     write_cov(outFname, noise_cov)
+    raw_temp.save(outTemp, overwrite=overwrite)
     
     print("Done with "+subj)

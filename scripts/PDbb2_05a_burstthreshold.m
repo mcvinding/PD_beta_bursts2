@@ -9,14 +9,16 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 0;   % Overwirte old files 0=false or 1=true
+overwrite = 1;   % Overwirte old files 0=false or 1=true
 
 steps   = 0:0.1:4;
 labels  = {'lh_roi','rh_roi'};
 fsample = 1000; %Hz
 
 %% Run across thrershold to find optimum
-rhomat = zeros(length(subjects),length(steps), 2);
+rhomat_beta = zeros(length(subjects),length(steps), 2); % For beta band filtered data
+rhomat_mube = zeros(length(subjects),length(steps), 2); % For mu+beta band filtered data
+
 for ss = 1:length(subjects)
     subj = subjects{ss};
     fprintf('Now loading subj %s...\n', subj)
@@ -26,8 +28,9 @@ for ss = 1:length(subjects)
     
     % Output
     outfname_raw = fullfile(dirs.meg_path, subj, 'roidata.mat');
-    outfname_hlb = fullfile(dirs.meg_path, subj, 'roidata_hlbt.mat');
-        
+    outfname_beta_hlb = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt.mat');
+    outfname_mube_hlb = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt.mat');
+
     % Load data
     load(infile_rh);
     rh_dat = label_tc;
@@ -49,17 +52,31 @@ for ss = 1:length(subjects)
         fprintf('saving %s...', outfname_raw); save(outfname_raw, 'roidata'); disp('done')
     end
     
-    % Band-pass to beta band
-    cfg = [];
-    cfg.bpfilter    = 'yes';
-    cfg.bpfreq      = [13 30];
-    cfg.hilbert     ='abs';
-    
-    roidata_hlb = ft_preprocessing(cfg, roidata);
-    
-    % Save
-    if ~exist(outfname_hlb, 'file') || overwrite
-        fprintf('saving %s...', outfname_hlb); save(outfname_hlb, 'roidata_hlb'); disp('done')
+    if ~exist(outfname_beta_hlb, 'file') || overwrite
+
+        % Band-pass to beta band
+        cfg = [];
+        cfg.bpfilter    = 'yes';
+        cfg.bpfreq      = [13 30];
+        cfg.hilbert     ='abs';
+        roidata_beta_hlb = ft_preprocessing(cfg, roidata);
+
+        % Band-pass to mu+beta band
+        cfg = [];
+        cfg.bpfilter    = 'yes';
+        cfg.bpfreq      = [8 30];
+        cfg.hilbert     ='abs';
+        roidata_mube_hlb = ft_preprocessing(cfg, roidata);
+        
+        % Save
+        fprintf('saving %s...', outfname_beta_hlb);
+        save(outfname_beta_hlb, 'roidata_beta_hlb'); disp('done')
+        fprintf('saving %s...', outfname_mube_hlb);
+        save(outfname_mube_hlb, 'roidata_mube_hlb'); disp('done')
+        
+    elseif exist(outfname_beta_hlb, 'file') && ~overwrite
+        load(outfname_beta_hlb);
+        load(outfname_mube_hlb);
     end
           
     % Find correlations across thresholds
@@ -71,16 +88,26 @@ for ss = 1:length(subjects)
         cfg.cutofftype  = 'med';
         cfg.corrtype    = 'amp';
         cfg.channel     = labels{ii};
-        [~, rhomat(ss,:,ii)] = find_betaevents(cfg, roidata_hlb);
+        [~, rhomat_beta(ss,:,ii)] = find_betaevents(cfg, roidata_beta_hlb);
+        
+        cfg = [];
+        cfg.length      = 3;
+        cfg.overlap     = 0;
+        cfg.steps       = steps;       
+        cfg.cutofftype  = 'med';
+        cfg.corrtype    = 'amp';
+        cfg.channel     = labels{ii};
+        [~, rhomat_mube(ss,:,ii)] = find_betaevents(cfg, roidata_mube_hlb);
         disp('done')
     end
 end
 
-save('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat','rhomat')
+save('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat','rhomat_beta', 'rhomat_mube')
 disp('done')
 
 %% Find cutoff
 
-threshold = find_threshold(rhomat, steps, 1); title('Threshold')
+threshold = find_threshold(rhomat_beta, steps, 1); title('Threshold')
+threshold = find_threshold(rhomat_mube, steps, 1); title('Threshold')
 
 %END

@@ -80,15 +80,6 @@ for subj_date in subjects_and_dates:
         inFiles = [op.join(raw_fpath,f) for f in file_list if old_filestring in f]
     else:
         inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
-        
-#    # Debug
-#    if len(inFiles)>1:
-#        print('WARNING: TOO MANYE FILEs FOR SUBJ '+subj)
-#        error_list +=  [subj]        
-#    elif not inFiles:
-#        print('WARNING: NO FILE FOR SUBJ '+subj)
-#        missing_list += [subj]
-#        continue
   
     # Load data (This loop will make sure that split files are read toghether)
     fname = inFiles[0]
@@ -116,7 +107,6 @@ for subj_date in subjects_and_dates:
     raw.notch_filter(notch_freqs, n_jobs=3, picks=picks_meg)                    # Remove residual linenoise
     raw.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
 
-    
     # Find events and crop data
     eve = find_events(raw, stim_channel='STI101')
     
@@ -168,15 +158,12 @@ for subj_date in subjects_and_dates:
     # RUN ICA
     ica = ICA(n_components=0.95, method='fastica', random_state=0)
 
-    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True, reject_by_annotation =True)
-#    ica.labels_ = dict()        
+    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True, reject_by_annotation=True)
+#    ica.labels_ = dict()       # Old bugfix  
     
     # Plot and save
     ica_fig = ica.plot_components()
     [fig.savefig(op.join(ica_path,'ICA_allComp'+str(i)+'.png')) for i, fig in enumerate(ica_fig)]
-    
-    ica.save(out_icaFname)
-    print('ICA comp saved as '+out_icaFname)
 
     # REMOVE COMPONENTS
     picks_eXg = pick_types(raw.info, meg=False, eeg=False, eog=True, ecg = True, emg=False, misc=False, stim=False, exclude='bads')
@@ -231,7 +218,7 @@ for subj_date in subjects_and_dates:
         eog_evo_fig = ica.plot_overlay(eog_epochs.average(), exclude=eog_inds, show=False)  # plot EOG cleaning
         eog_evo_fig.savefig(op.join(ica_path, 'ICA_eog_overlay.png'))
         plt.close()
-            
+                    
     # Apply  ICA to Raw
     raw_ica = ica.apply(raw)
     
@@ -240,6 +227,7 @@ for subj_date in subjects_and_dates:
 
     # Save
     raw_ica.save(outfname, overwrite=overwrite_old_files)
+    ica.save(out_icaFname)
 
     print('----------- FINISHED '+subj+' -----------------')
     plt.close('all')    

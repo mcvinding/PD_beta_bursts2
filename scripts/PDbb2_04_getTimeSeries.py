@@ -29,17 +29,13 @@ for subj in subjects:
     srcfile     = op.join(subj_path, subj+'-'+spacing+'-src.fif')
     stcfile     = op.join(subj_path, subj+'-dspm-lh.stc')
 
-    # outhilbt = op.join(subj_path, subj+'-ts-hilbt')      # Hilbert envelope
-    outrawtc = op.join(subj_path, subj+'-ts-rawtc')      # Raw time-series
-    # outrawft = op.join(subj_path, subj+'-ts-rawft')      # Band-pass filtered time-series
+    outrawtc    = op.join(subj_path, subj+'-ts-rawtc')      # Raw time-series
 
     if op.exists(outrawtc+'-lh.mat') and not overwrite:
         print('File '+outrawtc+' exists. Continue!')
         continue
-        
-    # hilb = dict()
-    rawtc = dict()
     
+    # Load
     if op.exists(srcfile):
         stc = mne.read_source_estimate(stcfile)
         src = mne.read_source_spaces(srcfile)

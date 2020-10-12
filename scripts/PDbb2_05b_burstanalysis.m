@@ -1,6 +1,5 @@
 % Find beta bursts for each subject
-clear all
-close all
+clear all; close all
 addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
 addpath('/home/mikkel/beta_bursts/functions')
@@ -8,13 +7,15 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 0;   % Overwirte old files 0=false or 1=true
+overwrite = 1;   % Overwirte old files 0=false or 1=true
 
 labels  = {'lh_roi','rh_roi'};
 
 %% Choose threshold
 load('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat')
-cutoff = find_threshold(rhomat, 0:0.1:4, 1); title('Threshold')
+cutoff_beta = find_threshold(rhomat_beta, 0:0.1:4, 1); title('Threshold')
+cutoff_mube = find_threshold(rhomat_mube, 0:0.1:4, 1); title('Threshold')
+cutoff = 2;
 
 %% Get beta summary
 cfg = [];
@@ -35,7 +36,7 @@ for ss = 1:length(subjects)
     burstsummary = [];
     subj = subjects{ss};
     fprintf('Reading subj %s.\n', subj)
-    infile = fullfile(dirs.meg_path, subj, 'roidata_hlbt.mat');
+    infile = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt.mat');
     outfname = fullfile(dirs.meg_path, subj,[subj,'-burstsummary.mat']);
     
     if exist(outfname,'file') && ~overwrite
@@ -50,13 +51,13 @@ for ss = 1:length(subjects)
     for ii = 1:length(labels)
         cfg.channel = labels{ii};
         
-        [burstsummary{ii}] = find_betaevents(cfg, roidata_hlb);
+        [burstsummary{ii}] = find_betaevents(cfg, roidata_beta_hlb);
     end
 
     % Save
-    fprintf('saving %s... ', outfname)
-    save(outfname, 'burstsummary')
-    disp('done')
+%     fprintf('saving %s... ', outfname)
+%     save(outfname, 'burstsummary')
+%     disp('done')
     
     % Intermediate summaries for inspection
     neve_lh(ss) = burstsummary{1}.n_events;

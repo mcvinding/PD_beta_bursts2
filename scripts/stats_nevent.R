@@ -9,7 +9,7 @@ library(brms)
 # Bayes?
 
 ## Load data
-load('X://PD_longrest//groupanalysis//ndata.Rdata')
+load('X://PD_longrest//groupanalysis//ndata_all.Rdata')
 
 ## Center variables
 ndata$age.centerd <- ndata$age-mean(ndata$age)
@@ -17,47 +17,91 @@ ndata$age.min <- ndata$age-min(ndata$age)
 
 ndata$thick.centerd <- ndata$thick-mean(ndata$thick)
 
-# * age
-# * thickness
 
-ggplot( aes(x=nevent, fill=group), data=ndata) +
-  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=150)
+# Inspect hist
+ggplot( aes(x=nevent.b.m1, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.b.m2, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.b.pc, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.u.m1, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.u.m2, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.u.pc, fill=group), data=ndata) +
+  geom_histogram(color="black", alpha=0.6, position = 'dodge', bins=50)
+
+# Group diff
+t.test(nevent.b.m1~group, data=ndata)
+t.test(nevent.b.m2~group, data=ndata)
+t.test(nevent.b.pc~group, data=ndata)
+t.test(nevent.u.m1~group, data=ndata)
+t.test(nevent.u.m2~group, data=ndata)
+t.test(nevent.u.pc~group, data=ndata)
+
+# Inspect ~age
+ggplot(aes(x=age, y=nevent.b.m1, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+ggplot(aes(x=age, y=nevent.b.m2, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+ggplot(aes(x=age, y=nevent.b.pc, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+ggplot(aes(x=age, y=nevent.u.m1, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+ggplot(aes(x=age, y=nevent.u.pc, color=group, shape=sex), data=ndata)+
+  geom_point()+
+  geom_smooth(method=lm)
+
+
 
 
 ## Polynomial variables
-nlh <- subset(ndata, hemi=='lh')
+# nlh <- subset(ndata, hemi=='lh')
+nmod.b.m1 <- glm(nevent.b.m1 ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+nmod.b.m2 <- glm(nevent.b.m2 ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+nmod.b.pc <- glm(nevent.b.pc ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+nmod.u.m1 <- glm(nevent.u.m1 ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+nmod.u.m2 <- glm(nevent.u.m2 ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+nmod.u.pc <- glm(nevent.u.pc ~ I(age.centerd^2)*age.centerd*sex*group, data=ndata, family=poisson)
+summary(nmod.b.m1)
+summary(nmod.b.m2)
+summary(nmod.b.pc)
+summary(nmod.u.m1)
+summary(nmod.u.m2)
+summary(nmod.u.pc)
 
-nmod <- glm(nevent.min ~ I(thick.centerd^2)*sex*group+thick.centerd*sex*group, data=nlh, family=poisson)
+anova(nmod.b.m2, test="Chisq")
 
-nlh$pred <- exp(predict(nmod, re.form=NA))
+new.dat <- ndata
+new.dat$pred <- exp(predict(nmod.u.m2, re.form=NA))
 
-ggplot(aes(x=thick.centerd, y=nevent.min, color=group, shape=sex), data=nlh)+
+ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=new.dat)+
   geom_point()+
   geom_line(aes(y = pred, linetype=sex), size = 1)
 
-tstmod.a <- glm(nevent.min ~ thick.centerd + I(thick.centerd^2) +
-                  group +  sex + 
-                  group:sex +
-                  group:thick.centerd +
-                  sex:thick.centerd +
-                  group:sex:thick.centerd +
-                  group:I(thick.centerd^2) +
-                  sex:I(thick.centerd^2) +
-                  group:sex:I(thick.centerd^2),
-                data=ndata, subset=hemi=="lh", family="poisson")
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(thick.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(thick.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(thick.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:thick.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:thick.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:thick.centerd)
+tstmod.a <- glm(nevent.b.pc ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=ndata, family=poisson)
+tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
+tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
+tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
+tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
+tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
+tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
 tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
 tstmod2.8 <- update(tstmod2.7, ~. -sex)
 tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(thick.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -thick.centerd)
+tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
+tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
 
-anova(tstmod2.10,
+anova(tstmod2.11,
+      tstmod2.10,
       tstmod2.9,
       tstmod2.8, 
       tstmod2.7, 
@@ -69,8 +113,8 @@ anova(tstmod2.10,
       tstmod2.1,
       tstmod.a, test="Chisq")
 
-## THICK ~ AGE
-agemod <- lm(age ~ thick.centerd + I(thick.centerd^2) +
+## THICK
+tckmod <- lm(nevent.b.m2 ~ thick.centerd + I(thick.centerd^2) +
               group +  sex + 
               group:sex +
               group:thick.centerd +
@@ -79,8 +123,8 @@ agemod <- lm(age ~ thick.centerd + I(thick.centerd^2) +
               group:I(thick.centerd^2) +
               sex:I(thick.centerd^2) +
               group:sex:I(thick.centerd^2),
-            data=ndata, subset=hemi=="lh")
-tstmod2.1 <- update(agemod, ~. -group:sex:I(thick.centerd^2))
+            data=ndata)
+tstmod2.1 <- update(tckmod, ~. -group:sex:I(thick.centerd^2))
 tstmod2.2 <- update(tstmod2.1, ~. -sex:I(thick.centerd^2))
 tstmod2.3 <- update(tstmod2.2, ~. -group:I(thick.centerd^2))
 tstmod2.4 <- update(tstmod2.3, ~. -group:sex:thick.centerd)
@@ -102,40 +146,42 @@ anova(tstmod2.10,
       tstmod2.3, 
       tstmod2.2,
       tstmod2.1,
-      agemod, test="F")
+      tckmod, test="F")
 
-ggplot(aes(x=age, y=thick, color=group, shape=sex), data=nlh)+
+new.dat <- ndata
+new.dat$pred <- predict(tckmod, re.form=NA)
+
+ggplot(aes(x=thick, y=nevent.b.m2, color=group, shape=sex), data=new.dat)+
   geom_point()+
-  geom_smooth(method=lm)
   geom_line(aes(y = pred, linetype=sex), size = 1)
 
 
 # BAYES
 # BF
-a.a <- lmBF(nevent ~ age + group +  sex + 
+a.a <- lmBF(nevent.b.m2 ~ age + group +  sex + 
               group:sex +
               group:age +
               sex:age +
               group:sex:age, 
-            data = nlh)
-a.b <- lmBF(nevent ~ age + group +  sex + 
+            data = ndata)
+a.b <- lmBF(nevent.b.m2 ~ age + group +  sex + 
               group:sex +
               group:age +
               sex:age, 
-            data = nlh)
-a.c <- lmBF(nevent ~ age + group +  sex + 
+            data = ndata)
+a.c <- lmBF(nevent.b.m2 ~ age + group +  sex + 
               group:sex +
               group:age, 
-            data = nlh)
-a.d <- lmBF(nevent ~ age + group +  sex + 
+            data = ndata)
+a.d <- lmBF(nevent.b.m2 ~ age + group +  sex + 
               group:sex, 
-            data = nlh)
-a.e <- lmBF(nevent ~ age + group +  sex, 
-            data = nlh)
-a.f <- lmBF(nevent ~ age + group, 
-            data = nlh)
-a.g <- lmBF(nevent ~ age, 
-            data = nlh)
+            data = ndata)
+a.e <- lmBF(nevent.b.m2 ~ age + group +  sex, 
+            data = ndata)
+a.f <- lmBF(nevent.b.m2 ~ age + group, 
+            data = ndata)
+a.g <- lmBF(nevent.b.m2 ~ age, 
+            data = ndata)
 
 
 t.a <- lmBF(nevent ~ thick + group +  sex + 

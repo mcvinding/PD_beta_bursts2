@@ -7,7 +7,9 @@ library(freesurfer)
 wrkdir <- "X://PD_longrest//groupanalysis"
 setwd(wrkdir)
 
-# IMPORT SUBJECT DATA
+###########################################################################################
+# %%% IMPORT SUBJECT DATA %%%
+###########################################################################################
 # Get "New" subjects
 # subj_data <- read.xlsx2('C://Users//Mikkel//Documents//PDbb2//groupanalysis//subj_data_anonymised.xlsx', 1)
 subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
@@ -44,8 +46,10 @@ save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
 # Reload
 load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
 
+###########################################################################################
+# %%% IMPORT FS ROI STATS %%%
+###########################################################################################
 
-## IMPORT FS ROI STATS
 roi.lh.thick <- data.frame(subj=sdata$subj,
                            thick = rep(NaN, length(sdata$subj)),
                            hemi = rep('lh', length(sdata$subj)))
@@ -74,39 +78,54 @@ save(roi.thick, file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 # Reload
 load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 
+# Selct only left hemi for now!
+lh.roi.thick <- subset(roi.thick, hemi=='lh')
 
-## IMPORT N EVENT DATA
+###########################################################################################
+# %%% IMPORT N EVENT DATA %%%
+###########################################################################################
 # Read N event data
-temp <- readMat("neve_data.mat")
-hemi <- as.factor(unlist(temp$hemiN))
-neve <- temp$neve
-subj <- as.factor(unlist(temp$subjsN))
+temp <- readMat("neve_b_m1_data.mat")
+# hemi <- as.factor(unlist(temp$hemiN))
+# nevent.b.m1 <- temp$nevent.b.m1
+subj <- as.factor(unlist(temp$subjects))
 
-neve.data <- data.frame(nevent=neve,
-                        subj=subj,
-                        hemi=hemi)
+temp2 <- readMat("neve_b_m2_data.mat")
+temp3 <- readMat("neve_b_pc_data.mat")
+temp4 <- readMat("neve_u_m1_data.mat")
+temp5 <- readMat("neve_u_m2_data.mat")
+temp6 <- readMat("neve_u_pc_data.mat")
+
+neve.data <- data.frame(nevent.b.m1=temp$nevent.b.m1,
+                        nevent.b.m2=temp2$nevent.b.m2,
+                        nevent.b.pc=temp3$nevent.b.pc,
+                        nevent.u.m1=temp4$nevent.u.m1,
+                        nevent.u.m2=temp5$nevent.u.m2,
+                        nevent.u.pc=temp6$nevent.u.pc,
+                        subj=subj)
 neve.data$nevent.min <- round(neve.data$nevent/3)
 
 # Merge data frames
 ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
-ndata <- merge(ndata, roi.thick, by=c("subj", "hemi"))
+ndata <- merge(ndata, lh.roi.thick, by=c("subj"))  # Add hemi later
 
 # Save
-save(ndata, file='X://PD_longrest//groupanalysis//ndata.Rdata')
-write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata.csv')
+save(ndata, file='X://PD_longrest//groupanalysis//ndata_all.Rdata')
+# write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata.csv')
 
-## IMPORT EVENT LENGTH DATA
+###########################################################################################
+# %%% IMPORT EVENT LENGTH DATA %%%
+###########################################################################################
+
 # Read event length data
-temp <- readMat("leneve_data.mat")
-hemi <- as.factor(unlist(temp$hemi))
-leneve <- temp$leneve
-subj <- as.factor(unlist(temp$subjs))
+temp <- readMat("leneve_b_m1.mat")
+# hemi <- as.factor(unlist(temp$hemi))
+leneve <- temp$len.b.m1
+subj <- as.factor(unlist(temp$sub.b.m1))
 
-len.data <- data.frame(leneve=leneve,
-                       subj=subj,
-                       hemi=hemi)
-
-len.data$leneve.ms <- len.data$lenev*1000
+len.data.b.m1 <- data.frame(leneve=leneve,
+                            subj=subj)
+len.data.b.m1$leneve.ms <- len.data$lenev*1000
 
 # Merge data frames
 ldata <- merge(len.data, sdata, by="subj", all=FALSE)

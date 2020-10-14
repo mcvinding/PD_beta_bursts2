@@ -1,4 +1,10 @@
+###########################################################################################
 # Import data to R and save for further analysis and plotting.
+# Subject metadata, clinical data, N events data per subject,  length/max/tue data per event.
+# Arrange into array with data: 
+#   1) oner subject per row
+#   2) on event per row
+###########################################################################################
 library(R.matlab)
 library(xlsx)
 library(freesurfer)
@@ -45,6 +51,61 @@ save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
 
 # Reload
 load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
+
+###########################################################################################
+# %%% IMPORT CLINICAL TEST DATA %%%
+###########################################################################################
+subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
+subj_data$age <- as.numeric(as.character(subj_data$Age.))
+subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
+subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'control', "patient"))
+subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
+subj_data$Years_Edu <- as.numeric(as.character(subj_data$Years_Edu))
+subj_data$FAB <- as.numeric(as.character(subj_data$FAB))
+subj_data$MoCA <- as.numeric(as.character(subj_data$MoCA))
+subj_data$BDI <- as.numeric(as.character(subj_data$BDI))
+
+sdata1 <- data.frame(subj      = subj_data$subj,
+                     group     = subj_data$group,
+                     sex       = subj_data$sex,
+                     age       = subj_data$age,
+                     edu_years = subj_data$Years_Edu,
+                     FAB       = subj_data$FAB,
+                     MoCA      = subj_data$MoCA,
+                     BDI       = subj_data$BDI)
+
+# Get "Old" subjects
+load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
+sdata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
+                     group     = alldata$Sub_type,
+                     sex       = alldata$sex,
+                     age       = alldata$age,
+                     edu_years = alldata$edu_yrs,
+                     FAB       = rep(NA, 40),
+                     MoCA      = alldata$MoCA,
+                     BDI       = rep(NA, 40))
+
+
+utemp <- read.xlsx2('X://PD_long//subj_data//UPDRS_PD_MEG_2020.xlsx', 1)
+
+udata1 <- data.frame(subj     = as.factor(paste("0",utemp$Study_id, sep="")),
+                     UPDRS    = as.numeric(as.character(utemp$UPDRS_TOTAL)))
+
+ctrltemp <- setdiff(sdata1$subj, udata1$subj)
+udata1c <- data.frame(subj = ctrltemp,
+                      UPDRS = as.numeric(rep(NA, length(ctrltemp))))
+
+udata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
+                     UPDRS     = alldata$UPDRS_on)
+
+udata <- rbind(udata1, udata1c, udata2)
+
+## MERGE
+clindata <- merge(sdata, udata, by.x="subj", by.y="subj")
+
+# SAVE
+save(clindata, file='X://PD_longrest//groupanalysis//clindata.Rdata')
+write.csv(clindata, file='X://PD_longrest//groupanalysis//clindata.csv', sep=";")
 
 ###########################################################################################
 # %%% IMPORT FS ROI STATS %%%

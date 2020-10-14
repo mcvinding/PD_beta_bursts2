@@ -78,16 +78,16 @@ summary(nmod.u.m1)
 summary(nmod.u.m2)
 summary(nmod.u.pc)
 
-anova(nmod.b.m2, test="Chisq")
+anova(nmod.u.m2, test="Chisq")
 
 new.dat <- ndata
-new.dat$pred <- exp(predict(nmod.u.m2, re.form=NA))
+new.dat$pred <- exp(predict(nmod.b.m2, re.form=NA))
 
-ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=new.dat)+
+ggplot(aes(x=age, y=nevent.b.m2, color=group, shape=sex), data=new.dat)+
   geom_point()+
   geom_line(aes(y = pred, linetype=sex), size = 1)
 
-tstmod.a <- glm(nevent.b.pc ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=ndata, family=poisson)
+tstmod.a <- glm(nevent.u.m2 ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=ndata, family=poisson)
 tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
 tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
 tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))

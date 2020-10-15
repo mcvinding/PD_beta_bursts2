@@ -13,6 +13,10 @@ library(freesurfer)
 wrkdir <- "X://PD_longrest//groupanalysis"
 setwd(wrkdir)
 
+# Create array to mark rejected subjects
+check.data <- read.xlsx2('X://PD_long//subj_data//subjects_and_dates.xlsx', 1)
+check.data <- subset(check.data, rest_ec==1)
+
 ###########################################################################################
 # %%% IMPORT SUBJECT DATA %%%
 ###########################################################################################
@@ -23,48 +27,12 @@ subj_data$age <- as.numeric(as.character(subj_data$Age.))
 subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
 subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'control', "patient"))
 subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
-
-# Arrange all subject data
-sdata1 <- data.frame(subj=subj_data$subj,
-                     group=subj_data$group,
-                     sex=subj_data$sex,
-                     age=subj_data$age)
-
-# Get "Old" subjects
-load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
-sdata2 <- data.frame(subj=paste("0",alldata$MEG_ID, sep=""),
-                         group=alldata$Sub_type,
-                         sex=alldata$sex,
-                         age=alldata$age)
-
-# Combine 
-sdata <- rbind(sdata1, sdata2)
-
-# Reject rejected subjects
-check.data <- read.xlsx2('X://PD_long//subj_data//subjects_and_dates.xlsx', 1)
-check.data <- subset(check.data, rest_ec==1)
-
-sdata <- subset(sdata, sdata$subj %in% check.data$id)
-
-# Save
-save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
-
-# Reload
-load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
-
-###########################################################################################
-# %%% IMPORT CLINICAL TEST DATA %%%
-###########################################################################################
-subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
-subj_data$age <- as.numeric(as.character(subj_data$Age.))
-subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
-subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'control', "patient"))
-subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
 subj_data$Years_Edu <- as.numeric(as.character(subj_data$Years_Edu))
 subj_data$FAB <- as.numeric(as.character(subj_data$FAB))
 subj_data$MoCA <- as.numeric(as.character(subj_data$MoCA))
 subj_data$BDI <- as.numeric(as.character(subj_data$BDI))
 
+# Arrange all subject data
 sdata1 <- data.frame(subj      = subj_data$subj,
                      group     = subj_data$group,
                      sex       = subj_data$sex,
@@ -85,20 +53,92 @@ sdata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
                      MoCA      = alldata$MoCA,
                      BDI       = rep(NA, 40))
 
+# Combine 
+sdata <- rbind(sdata1, sdata2)
 
-utemp <- read.xlsx2('X://PD_long//subj_data//UPDRS_PD_MEG_2020.xlsx', 1)
+# Reject rejected subjects
+sdata <- subset(sdata, sdata$subj %in% check.data$id)
+
+# Save
+save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
+
+# Reload
+load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
+
+###########################################################################################
+# %%% IMPORT CLINICAL TEST DATA %%%
+###########################################################################################
+# subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
+# subj_data$age <- as.numeric(as.character(subj_data$Age.))
+# subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
+# subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'control', "patient"))
+# subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
+# subj_data$Years_Edu <- as.numeric(as.character(subj_data$Years_Edu))
+# subj_data$FAB <- as.numeric(as.character(subj_data$FAB))
+# subj_data$MoCA <- as.numeric(as.character(subj_data$MoCA))
+# subj_data$BDI <- as.numeric(as.character(subj_data$BDI))
+# 
+# sdata1 <- data.frame(subj      = subj_data$subj,
+#                      group     = subj_data$group,
+#                      sex       = subj_data$sex,
+#                      age       = subj_data$age,
+#                      edu_years = subj_data$Years_Edu,
+#                      FAB       = subj_data$FAB,
+#                      MoCA      = subj_data$MoCA,
+#                      BDI       = subj_data$BDI)
+# 
+# # Get "Old" subjects
+# load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
+# sdata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
+#                      group     = alldata$Sub_type,
+#                      sex       = alldata$sex,
+#                      age       = alldata$age,
+#                      edu_years = alldata$edu_yrs,
+#                      FAB       = rep(NA, 40),
+#                      MoCA      = alldata$MoCA,
+#                      BDI       = rep(NA, 40))
+
+
+# utemp <- read.xlsx2('X://PD_long//subj_data//UPDRS_PD_MEG_2020.xlsx', 1)
+utemp <- read.csv('X://PD_long//subj_data//UPDRS_PD_MEG_subscales.csv', sep=";")
 
 udata1 <- data.frame(subj     = as.factor(paste("0",utemp$Study_id, sep="")),
-                     UPDRS    = as.numeric(as.character(utemp$UPDRS_TOTAL)))
+                     HY.stage = as.factor(as.numeric(as.character(utemp$H_Y_STAGE))),
+                     UPDRS    = as.numeric(as.character(utemp$UPDRS_TOTAL)),
+                     U.F1     = as.numeric(as.character(utemp$F1)),
+                     U.F2     = as.numeric(as.character(utemp$F2)),
+                     U.F3     = as.numeric(as.character(utemp$F3)),
+                     U.F4     = as.numeric(as.character(utemp$F4)),
+                     U.F5     = as.numeric(as.character(utemp$F5)),
+                     U.F6     = as.numeric(as.character(utemp$F6)),
+                     U.F7     = as.numeric(as.character(utemp$F7))
+                     )
 
-ctrltemp <- setdiff(sdata1$subj, udata1$subj)
-udata1c <- data.frame(subj = ctrltemp,
-                      UPDRS = as.numeric(rep(NA, length(ctrltemp))))
+# ctrltemp <- setdiff(sdata1$subj, udata1$subj)
+# udata1c <- data.frame(subj = ctrltemp,
+#                       UPDRS = as.numeric(rep(NA, length(ctrltemp))))
 
-udata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
-                     UPDRS     = alldata$UPDRS_on)
+utemp2 <- read.xlsx('C://Users//Mikkel//Documents//betabursts//groupanalysis//UPDRS_raw.xlsx',1,header=T)
+utemp2 <- subset(utemp2, session=="2")
+udata2 <- data.frame(id     = as.factor(utemp2$id),
+                     UPDRS  = utemp2$Total,
+                     U.F1   = as.numeric(as.character(utemp2$F1)),
+                     U.F2   = as.numeric(as.character(utemp2$F2)),
+                     U.F3   = as.numeric(as.character(utemp2$F3)),
+                     U.F4   = as.numeric(as.character(utemp2$F4)),
+                     U.F5   = as.numeric(as.character(utemp2$F5)),
+                     U.F6   = as.numeric(as.character(utemp2$F6)),
+                     U.F7   = as.numeric(as.character(utemp2$F7))
+                     )
 
-udata <- rbind(udata1, udata1c, udata2)
+hy.temp = data.frame(subj     = as.factor(paste("0",alldata$MEG_ID, sep="")),
+                     HY.stage = as.factor(alldata$HY_stage),
+                     id       = alldata$ID)
+
+udata2 <- merge(udata2, hy.temp, by=c("id"))
+udata2 <- subset(udata2, select=-c(id))
+
+udata <- rbind(udata1, udata2)
 
 ## MERGE
 clindata <- merge(sdata, udata, by.x="subj", by.y="subj")
@@ -143,6 +183,11 @@ load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 lh.roi.thick <- subset(roi.thick, hemi=='lh')
 
 ###########################################################################################
+# %%% IMPORT PSD DATA %%%
+###########################################################################################
+
+
+###########################################################################################
 # %%% IMPORT N EVENT DATA %%%
 ###########################################################################################
 # Read N event data
@@ -151,6 +196,7 @@ temp <- readMat("neve_b_m1_data.mat")
 # nevent.b.m1 <- temp$nevent.b.m1
 subj <- as.factor(unlist(temp$subjects))
 
+# XXX: SORT !!!!
 temp2 <- readMat("neve_b_m2_data.mat")
 temp3 <- readMat("neve_b_pc_data.mat")
 temp4 <- readMat("neve_u_m1_data.mat")
@@ -168,11 +214,19 @@ neve.data$nevent.min <- round(neve.data$nevent/3)
 
 # Merge data frames
 ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
-ndata <- merge(ndata, lh.roi.thick, by=c("subj"))  # Add hemi later
 
 # Save
 save(ndata, file='X://PD_longrest//groupanalysis//ndata_all.Rdata')
 # write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata.csv')
+
+###########################################################################################
+# %%% COLLECT ALL DATA INTO ONE %%%
+###########################################################################################
+tmpdat1 <- merge(ndata, lh.roi.thick, by=c("subj"))
+alldata <- merge(tmpdat1, udata, by=c("subj"), all.x=TRUE)
+
+save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
+write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.csv')
 
 ###########################################################################################
 # %%% IMPORT EVENT LENGTH DATA %%%

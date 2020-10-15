@@ -9,8 +9,6 @@ import numpy as np
 import scipy.io
 import pandas
 import fooof
-from fooof.sim.params import param_sampler, param_iter, Stepper
-from fooof.sim.gen import gen_power_spectrum, gen_group_power_spectra
 from fooof.analysis import get_band_peak, get_band_peak_group
 import matplotlib.pyplot as plt
 
@@ -33,7 +31,7 @@ groups = ['ctrl_dat1','ptns_dat1','ctrl_dat2','ptns_dat2']
 max_n_peaks = 8
 
 # Define frequency range across which to model the spectrum
-freq_range = [1, 45]
+freq_range = [1, 40]
         
 #%% Read data
 dat = scipy.io.loadmat('/home/mikkel/PD_motor/rest_ec/groupanalysis/PSD_data.mat')

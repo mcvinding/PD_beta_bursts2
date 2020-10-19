@@ -203,12 +203,12 @@ temp4 <- readMat("neve_u_m1_data.mat")
 temp5 <- readMat("neve_u_m2_data.mat")
 temp6 <- readMat("neve_u_pc_data.mat")
 
-neve.data <- data.frame(nevent.b.m1=temp$nevent.b.m1,
-                        nevent.b.m2=temp2$nevent.b.m2,
-                        nevent.b.pc=temp3$nevent.b.pc,
-                        nevent.u.m1=temp4$nevent.u.m1,
+# neve.data <- data.fram½e(nevent.b.m1=temp$nevent.b.m1,
+neve.data <- data.frame(nevent.b.m2=temp2$nevent.b.m2,
+                        # nevent.b.pc=temp3$nevent.b.pc,
+                        # nevent.u.m1=temp4$nevent.u.m1,
                         nevent.u.m2=temp5$nevent.u.m2,
-                        nevent.u.pc=temp6$nevent.u.pc,
+                        # nevent.u.pc=temp6$nevent.u.pc,
                         subj=subj)
 neve.data$nevent.min <- round(neve.data$nevent/3)
 

@@ -9,6 +9,7 @@ import numpy as np
 import scipy.io
 import pandas
 import fooof
+import scipy.io as sio
 from fooof.analysis import get_band_peak, get_band_peak_group
 import matplotlib.pyplot as plt
 
@@ -18,6 +19,12 @@ from fooof.plts.spectra import plot_spectrum_shading, plot_spectra_shading
 
 from fooof import FOOOF
 from fooof import FOOOFGroup
+
+
+from fooof.plts.spectra import plot_spectrum, plot_spectra
+from fooof.plts.spectra import plot_spectrum_shading, plot_spectra_shading
+from fooof.bands import Bands
+from fooof import FOOOF
 
 #%% SETTINGS
 # Define frequency bands of interest
@@ -35,6 +42,42 @@ freq_range = [1, 40]
         
 #%% Read data
 dat = scipy.io.loadmat('/home/mikkel/PD_motor/rest_ec/groupanalysis/PSD_data.mat')
+
+#%% COPYPASTA
+bands = Bands({'delta' : [1, 4],
+               'theta' : [4, 8],
+               'alpha' : [8, 13],
+               'beta'  : [13, 30],
+               'gamma' : [30, 45]})
+
+shade_cols = ['#e8dc35', '#46b870', '#1882d9', '#a218d9', '#e60026']
+              
+              
+psd = sio.loadmat(psdfname)['psd'][0]
+freqs = sio.loadmat(psdfname)['freqs'][0]
+
+    # Initialize a FOOOF object
+fm = FOOOF(max_n_peaks=10, peak_threshold=2, peak_width_limits = [.75, 12], aperiodic_mode='fixed', min_peak_height=0.025)
+
+# Set the frequency range to fit the model
+#freq_range = [0.1, 45]
+
+# Report: fit the model, print the resulting parameters, and plot the reconstruction
+fm.report(freqs, psd, freq_range)
+#fm.plot()
+
+plot_spectrum_shading(freqs, psd, log_powers=True, linewidth=3, shades=bands.definitions, shade_colors=shade_cols)
+plt.xlim(freq_range);
+plt.title('Band-by-Band', t_settings);
+
+# Plot the power spectra differences
+plot_spectrum_shading(freqs, fm.fooofed_spectrum_,
+                     log_powers=False, linewidth=3,
+                     shades=bands.definitions, shade_colors=shade_cols)
+plt.xlim(f_range);
+plt.title('Band-by-Band - Flattened', t_settings);
+
+
 
 #%% Do FOOOF
 alpha_dict = dict()

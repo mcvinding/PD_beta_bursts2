@@ -33,8 +33,8 @@ for ss = 1:length(subjects)
 end
 
 % SAVE
-save('/home/mikkel/PD_longrest/groupanalysis/skw.mat', 'skw_b','skw_u')
-save('/home/mikkel/PD_longrest/groupanalysis/krt.mat', 'krt_b','krt_u')
+save('/home/mikkel/PD_longrest/groupanalysis/skw.mat', 'skw_b','skw_u','subjects')
+save('/home/mikkel/PD_longrest/groupanalysis/krt.mat', 'krt_b','krt_u','subjects')
 disp('done')
 
 %END

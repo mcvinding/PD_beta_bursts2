@@ -1,4 +1,5 @@
-# Analysis of N events
+# PD beta burst statistics: analysis of N events
+# CLEAN UP!!!!
 library(lme4)
 library(arm)
 library(ggplot2)
@@ -16,7 +17,6 @@ ndata$age.centerd <- ndata$age-mean(ndata$age)
 ndata$age.min <- ndata$age-min(ndata$age)
 
 ndata$thick.centerd <- ndata$thick-mean(ndata$thick)
-
 
 # Inspect hist
 ggplot( aes(x=nevent.b.m1, fill=group), data=ndata) +
@@ -59,8 +59,6 @@ ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=ndata)+
 ggplot(aes(x=age, y=nevent.u.pc, color=group, shape=sex), data=ndata)+
   geom_point()+
   geom_smooth(method=lm)
-
-
 
 
 ## Polynomial variables

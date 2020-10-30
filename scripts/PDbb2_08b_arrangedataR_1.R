@@ -1,9 +1,7 @@
 ###########################################################################################
 # Import data to R and save for further analysis and plotting.
-# Subject metadata, clinical data, N events data per subject,  length/max/tue data per event.
-# Arrange into array with data: 
-#   1) oner subject per row
-#   2) on event per row
+# Subject metadata, clinical data, N events data per subject
+# Arrange into dataframe with one subject per row
 ###########################################################################################
 library(R.matlab)
 library(xlsx)
@@ -206,94 +204,5 @@ alldata <- merge(tmpdat3, udata, by=c("subj"), all.x=TRUE)
 
 save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
 write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.csv')
-
-
-###########################################################################################
-###########################################################################################
-###########################################################################################
-# ****************************** COLLECT DATA AT BB LEVEL ******************************* #
-###########################################################################################
-###########################################################################################
-###########################################################################################
-
-
-###########################################################################################
-# %%% IMPORT EVENT LENGTH DATA %%%
-###########################################################################################
-# Read event length data
-temp <- readMat("leneve_b_m1.mat")
-# hemi <- as.factor(unlist(temp$hemi))
-leneve <- temp$len.b.m1
-subj <- as.factor(unlist(temp$sub.b.m1))
-
-len.data.b.m1 <- data.frame(leneve=leneve,
-                            subj=subj)
-len.data.b.m1$leneve.ms <- len.data$lenev*1000
-
-# Merge data frames
-ldata <- merge(len.data, sdata, by="subj", all=FALSE)
-ldata <- merge(ldata, roi.thick, by=c("subj", "hemi"))
-
-# Save
-save(ldata, file='X://PD_longrest//groupanalysis//ldata.Rdata')
-write.csv(ldata, file='X://PD_longrest//groupanalysis//ldata.csv')
-
-## IMPORT EVENT POW DATA
-# Read event power data
-temp <- readMat("maxeve_data.mat")
-hemi <- as.factor(unlist(temp$hemi))
-maxeve <- temp$maxeve
-subj <- as.factor(unlist(temp$subj))
-
-max.data <- data.frame(maxeve=maxeve,
-                       subj=subj,
-                       hemi=hemi)
-
-# Merge data frames
-mdata <- merge(max.data, sdata, by="subj", all=FALSE)
-mdata <- merge(mdata, roi.thick, by=c("subj", "hemi"))
-
-# Save
-save(mdata, file='X://PD_longrest//groupanalysis//mdata.Rdata')
-write.csv(mdata, file='X://PD_longrest//groupanalysis//mdata.csv')
-
-## IMPORT EVENT INTERVAL DATA
-# Read event interval data
-temp <- readMat("toeeve_data.mat")
-hemi <- as.factor(unlist(temp$hemi))
-toeeve <- temp$toeeve
-subj <- as.factor(unlist(temp$subjs))
-
-toe.data <- data.frame(toeeve=toeeve,
-                       subj=subj,
-                       hemi=hemi)
-
-toe.data$toeeve.ms <- toe.data$toeeve*1000
-
-# Merge data frames
-tdata <- merge(toe.data, sdata, by="subj", all=FALSE)
-tdata <- merge(tdata, roi.thick, by=c("subj", "hemi"))
-
-# Save
-save(tdata, file='X://PD_longrest//groupanalysis//tdata.Rdata')
-write.csv(tdata, file='X://PD_longrest//groupanalysis//tdata.csv')
-
-
-# MERGE ALL
-
-bbdata <- data.frame(leneve=leneve,
-                     toeeve=toeeve,
-                     maxeve=maxeve,
-                     subj=subj,
-                     hemi=hemi)
-
-bbdata <- merge(bbdata, sdata, by="subj", all=FALSE)
-bbdata <- merge(bbdata, roi.thick, by=c("subj", "hemi"))
-bbdata$leneve.ms <- bbdata$leneve*1000
-bbdata$toeeve.ms <- bbdata$toeeve*1000
-
-# Save
-save(bbdata, file='X://PD_longrest//groupanalysis//bbdata.Rdata')
-write.csv(bbdata, file='X://PD_longrest//groupanalysis//bbdata.csv')
 
 #END

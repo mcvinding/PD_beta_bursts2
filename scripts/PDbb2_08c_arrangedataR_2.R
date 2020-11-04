@@ -8,16 +8,17 @@ library(R.matlab)
 library(xlsx)
 
 # Define paths
-wrkdir <- "X://PD_longrest//groupanalysis"
+# wrkdir <- "X://PD_longrest//groupanalysis"
+wrkdir <- "C://Users//Mikkel//Documents//PDbb2//groupanalysis"
 setwd(wrkdir)
 
 ###########################################################################################
 # %%% Load SUBJECT METADATA %%%
 ###########################################################################################
 # load(file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
-# load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
-load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
-load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
+load(file='sdata.Rdata')
+load(file='clindata.Rdata')
+load(file='thickdata.Rdata')
 lh.roi.thick <- subset(roi.thick, hemi=='lh') # Selct only left hemi for now!
 
 ###########################################################################################
@@ -61,16 +62,18 @@ subj <- as.factor(unlist(temp$sub.u.m2))
 ###########################################################################################
 # %%% COLLECT ALL DATA INTO ONE %%%
 ###########################################################################################
-bbdata <- data.frame(leneve=leneve,
+tmp1 <- data.frame(leneve=leneve,
                      tueeve=tueeve,
                      maxeve=maxeve,
                      subj=subj)
-bbdata$leneve.ms <- bbdata$leneve*1000
-bbdata$tueeve.ms <- bbdata$tueeve*1000
-bbdata <- merge(bbdata, clindata, by="subj", all=FALSE)
+tmp1$leneve.ms <- bbdata$leneve*1000
+tmp1$tueeve.ms <- bbdata$tueeve*1000
+tmp2 <- merge(tmp1, sdata, by="subj", all=FALSE)
+clintmp <- clindata[,c(1,9:17)]
+bbdata <- merge(tmp2, clintmp, by="subj", all=TRUE)
 
 # Save
-save(bbdata, file='X://PD_longrest//groupanalysis//bbdata.Rdata')
-write.csv(bbdata, file='X://PD_longrest//groupanalysis//bbdata.csv')
+save(bbdata, file='bbdata.Rdata')
+write.csv(bbdata, file='bbdata.csv')
 
 #END

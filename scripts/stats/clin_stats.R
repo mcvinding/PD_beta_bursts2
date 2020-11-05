@@ -2,61 +2,61 @@
 library(ggplot2)
 
 # Load data
-load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
-load('X://PD_longrest//groupanalysis//ndata_all.Rdata')
+# load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
+load(file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
 
-
-udata <- merge(ndata, clindata, by = c('subj','group','age','sex'))
-pd.data <- subset(udata, group == 'patient')
+pd.data <- subset(alldata, group == 'patient')
 
 # UPDRS ~ Neve
-umod.b.m1 <- glm(UPDRS ~ nevent.b.m1 + age + sex, data=pd.data, family=poisson)
-umod.b.m2 <- glm(UPDRS ~ nevent.b.m2 * age * sex, data=pd.data, family=poisson)
-umod.b.pc <- glm(UPDRS ~ nevent.b.pc + age + sex, data=pd.data, family=poisson)
-umod.u.m1 <- glm(UPDRS ~ nevent.u.m1 + age + sex, data=pd.data, family=poisson)
-umod.u.m2 <- glm(UPDRS ~ nevent.u.m2 * age * sex, data=pd.data, family=poisson)
-umod.u.pc <- glm(UPDRS ~ nevent.u.pc + age + sex, data=pd.data, family=poisson)
-summary(umod.b.m1)
-summary(umod.b.m2)
-summary(umod.b.pc)
-summary(umod.u.m1)
+# umod.b.m2 <- glm(UPDRS ~ nevent.b.m2 * age * sex, data=pd.data, family=gaussian)
+umod.u.m2 <- glm(UPDRS ~ nevent.u.m2 * age * sex, data=pd.data, family=gaussian)
+# summary(umod.b.m2)
 summary(umod.u.m2)
-summary(umod.u.pc)
 
-
-# Neve ~ UPDRS
-nmod.b.m1 <- glm(nevent.b.m1 ~ UPDRS * age * sex, data=pd.data, family=poisson)
-nmod.b.m2 <- glm(nevent.b.m2 ~ UPDRS * age * sex, data=pd.data, family=poisson)
-nmod.b.pc <- glm(nevent.b.pc ~ UPDRS * age * sex, data=pd.data, family=poisson)
-nmod.u.m1 <- glm(nevent.u.m1 ~ UPDRS * age * sex, data=pd.data, family=poisson)
-nmod.u.m2 <- glm(nevent.u.m2 ~ UPDRS * age * sex, data=pd.data, family=poisson)
-nmod.u.pc <- glm(nevent.u.pc ~ UPDRS * age * sex, data=pd.data, family=poisson)
-summary(nmod.b.m1)
-summary(nmod.b.m2)
-summary(nmod.b.pc)
-summary(nmod.u.m1)
-summary(nmod.u.m2)
-summary(nmod.u.pc)
-
-
-pd.data$pred <- exp(predict(umod.b.m2, re.form=NA))
-
-ggplot( aes(y=UPDRS, x=nevent.b.m2, color=sex), data=pd.data)+
-  geom_point()+
-  geom_smooth(method='lm')+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
-anova(umod.b.m2, test="Chisq")
-
-
-
-pd.data$pred <- exp(predict(umod.u.m2, re.form=NA))
-
+pd.data$pred <- predict(umod.u.m2, re.form=NA)
 ggplot( aes(y=UPDRS, x=nevent.u.m2, color=sex), data=pd.data)+
   geom_point()+
-  geom_smooth(method='lm')+
+  # geom_smooth(method='lm')+
   geom_line(aes(y = pred, linetype=sex), size = 1)
 anova(umod.u.m2, test="Chisq")
 
+######################################################################################
+# Neve ~ UPDRS
+# nmod.b.m2 <- glm(nevent.b.m2 ~ UPDRS * age * sex, data=pd.data, family=poisson)
+nmod.u.1 <- glm(nevent.u.m2 ~ UPDRS * age * sex, data=pd.data, family=poisson)
+nmod.u.2 <- update(nmod.u.1, ~. -UPDRS:age:sex)
+nmod.u.3 <- update(nmod.u.2, ~. -age:sex)
+nmod.u.4 <- update(nmod.u.3, ~. -UPDRS:sex)
+nmod.u.5 <- update(nmod.u.4, ~. -UPDRS:age)
+nmod.u.6 <- update(nmod.u.5, ~. -sex)
+nmod.u.7 <- update(nmod.u.6, ~. -age)
+nmod.u.8 <- update(nmod.u.7, ~. -UPDRS)
+
+anova(nmod.u.8,nmod.u.7,nmod.u.6,nmod.u.5,nmod.u.4,nmod.u.3,nmod.u.2,nmod.u.1, 
+      test="Chisq")
+# summary(nmod.b.m2)
+summary(nmod.u.m2)
+
+pd.data$pred <- exp(predict(nmod.u.4, re.form=NA))
+ggplot( aes(x=UPDRS, y=nevent.u.m2, color=sex), data=pd.data)+
+  geom_point()+
+  geom_smooth(mehtod='lm')+
+  geom_line(aes(y = pred, linetype=sex), size = 1)
 
 ## SUBSCALES
+nmod.F1 <- glm(nevent.u.m2 ~ U.F1 * age * sex, data=pd.data, family=poisson)
+nmod.F2 <- glm(nevent.u.m2 ~ U.F2 * age * sex, data=pd.data, family=poisson)
+nmod.F3 <- glm(nevent.u.m2 ~ U.F3 * age * sex, data=pd.data, family=poisson)
+nmod.F4 <- glm(nevent.u.m2 ~ U.F4 * age * sex, data=pd.data, family=poisson)
+nmod.F5 <- glm(nevent.u.m2 ~ U.F5 * age * sex, data=pd.data, family=poisson)
+nmod.F6 <- glm(nevent.u.m2 ~ U.F6 * age * sex, data=pd.data, family=poisson)
+nmod.F7 <- glm(nevent.u.m2 ~ U.F7 * age * sex, data=pd.data, family=poisson)
+anova(nmod.F1, test="Chisq")
+anova(nmod.F2, test="Chisq")
+anova(nmod.F3, test="Chisq")
+anova(nmod.F4, test="Chisq")
+anova(nmod.F5, test="Chisq")
+anova(nmod.F6, test="Chisq")
+anova(nmod.F7, test="Chisq")
+
 

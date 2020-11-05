@@ -11,6 +11,7 @@ bbdata$log.len <- log(bbdata$leneve)
 bbdata$log.tue <- log(bbdata$tueeve)
 bbdata$log.max <- log(bbdata$maxeve)
 
+######################################################################################
 ## EVENT LENGTH
 lenmod <- lmer(log.len ~ I(age.centered^2)*group*sex + age.centered*group*sex + (1|subj), data=bbdata, REML=FALSE)
 lenmod.1 <- update(lenmod, ~. -I(age.centered^2):group:sex)
@@ -27,16 +28,15 @@ lenmod.11 <- update(lenmod.10, ~. -age.centered)
 
 anova(lenmod,lenmod.1,lenmod.2,lenmod.3,lenmod.4,lenmod.5,lenmod.6,lenmod.7,lenmod.8,lenmod.9,lenmod.10,lenmod.11)
 
-tmpdat <- subset(bbdata, hemi=="lh")
+tmpdat <- bbdata
 tmpdat$lenpred.fx <- exp(predict(lenmod, re.form=NA))
 tmpdat$lenpred.rx <- exp(predict(lenmod))
 
 ggplot(aes(x=age, y=lenpred.rx, color=group, shape=sex), data=tmpdat)+
-  geom_point()+
-  geom_line(aes(y = lenpred.fx, linetype=sex), size = 1)
+  geom_point()
+  # geom_line(aes(y = lenpred.fx, linetype=sex), size = 1)
 
-
-
+######################################################################################
 ## TIME UNTIL EVENT
 tuemod <- lmer(log.tue ~ I(age.centered^2)*group*sex + age.centered*group*sex + (1|subj), data=bbdata, REML=FALSE)
 tuemod.1 <- update(tuemod, ~. -I(age.centered^2):group:sex)
@@ -51,17 +51,18 @@ tuemod.9 <- update(tuemod.8, ~. -sex)
 tuemod.10 <- update(tuemod.9, ~. -I(age.centered^2))
 tuemod.11 <- update(tuemod.10, ~. -age.centered)
 
-anova(tuemod,tuemod.1,tuemod.2,tuemod.3,tuemod.4,tuemod.5,tuemod.6,tuemod.s,tuemod.7,tuemod.8,tuemod.9,tuemod.10)
+anova(tuemod,tuemod.1,tuemod.2,tuemod.3,tuemod.4,tuemod.5,tuemod.6,tuemod.7,tuemod.8,tuemod.9,tuemod.10,tuemod.11)
 
 tmpdat <- bbdata
-tmpdat$tuepred.fx <- exp(predict(tuemod, re.form=NA))
-tmpdat$tuepred.rx <- exp(predict(tuemod))
+tmpdat$tuepred.fx <- exp(predict(tuemod.5, re.form=NA))
+tmpdat$tuepred.rx <- exp(predict(tuemod.5))
 
 ggplot(aes(x=age, y=tuepred.rx, color=group, shape=sex), data=tmpdat)+
   geom_point()+
   geom_line(aes(y = tuepred.fx, linetype=sex), size = 1)
 
 
+######################################################################################
 ## MAX
 maxmod <- lmer(log.max ~ I(age.centered^2)*group*sex + age.centered*group*sex + (1|subj), data=bbdata, REML=FALSE)
 maxmod.1 <- update(maxmod, ~. -I(age.centered^2):group:sex)
@@ -86,9 +87,4 @@ ggplot(aes(x=age, y=maxpred.rx, color=group, shape=sex), data=tmpdat)+
   geom_line(aes(y = maxpred.fx, linetype=sex), size = 1)
 
 
-
-
-
-
-
-
+#END

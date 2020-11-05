@@ -36,8 +36,15 @@ tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
 anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
       test="Chisq")
 
+new.dat <- alldata[!is.na(alldata$skw.u),]
+new.dat$pred <- predict(tstmod2.4, re.form=NA)
+ggplot(aes(x=age, y=skw.u, color=group, shape=sex), data=new.dat)+
+  geom_point()+
+  geom_line(aes(y = pred, linetype=sex), size = 1)
+
+
 ######################################################################################
-# Skewness
+# Kurtosis
 tstmod.a <- glm(krt.u ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
 tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
 tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
@@ -54,4 +61,10 @@ tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
 anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
       test="Chisq")
 
+new.dat <- alldata[!is.na(alldata$krt.u),]
+new.dat$pred <- predict(tstmod2.10, re.form=NA)
+ggplot(aes(x=age, y=krt.u, color=group, shape=sex), data=new.dat)+
+  geom_point()+
+  geom_line(aes(y = pred, linetype=sex), size = 1)
 
+#END

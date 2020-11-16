@@ -19,7 +19,7 @@ setwd(wrkdir)
 load(file='sdata.Rdata')
 load(file='clindata.Rdata')
 load(file='thickdata.Rdata')
-lh.roi.thick <- subset(roi.thick, hemi=='lh') # Selct only left hemi for now!
+lh.roi.thick <- subset(roi.thick, hemi=='lh') # Selct only left hemi
 
 ###########################################################################################
 # %%% IMPORT EVENT LENGTH DATA %%%
@@ -69,8 +69,9 @@ tmp1 <- data.frame(leneve=leneve,
 tmp1$leneve.ms <- bbdata$leneve*1000
 tmp1$tueeve.ms <- bbdata$tueeve*1000
 tmp2 <- merge(tmp1, sdata, by="subj", all=FALSE)
+tmp3 <- merge(tmp2, lh.roi.thick, by="subj", all=FALSE)
 clintmp <- clindata[,c(1,9:17)]
-bbdata <- merge(tmp2, clintmp, by="subj", all=TRUE)
+bbdata <- merge(tmp3, clintmp, by="subj", all=TRUE)
 
 # Save
 save(bbdata, file='bbdata.Rdata')

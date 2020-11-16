@@ -16,7 +16,7 @@ alldata <- merge(alldata, bbsum, by="subj")
 
 # Re-arrange data
 cordat <- select(alldata, nevent.u.m2,leneve,tueeve,maxeve,
-                  age,MoCA,thick,UPDRS,
+                  age,MoCA,thick,U.F1,U.F2,U.F3,U.F4,U.F5,U.F6,U.F7,
                   a_intercept,a_slope,beta_pw,beta_cf,alpha_pw,alpha_cf,
                   skw.u,krt.u)
 

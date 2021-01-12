@@ -57,6 +57,25 @@ ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=new.dat)+
   geom_point()+
   geom_line(aes(y = pred, linetype=sex), size = 1)
 
+# No square term
+tstmod.8 <- glm(a_intercept ~ age.centerd*sex*group, data=alldata, family=gaussian)
+tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
+tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)
+tstmod.5 <- update(tstmod.6, ~. -group:sex)
+tstmod.4 <- update(tstmod.5, ~. -group:age.centerd)
+tstmod.3 <- update(tstmod.4, ~. -sex)
+tstmod.2 <- update(tstmod.3, ~. -age.centerd)
+tstmod.1 <- update(tstmod.2, ~. -group)
+
+anova(tstmod.1,tstmod.2,tstmod.3,tstmod.4,tstmod.5,tstmod.6,tstmod.7,tstmod.8, test="Chisq")
+
+# Plot top model
+new.dat <- alldata
+new.dat$pred <- predict(tstmod.8, re.form=NA)
+ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=new.dat)+
+  geom_point()+
+  geom_line(aes(y = pred, linetype=sex), size = 1)
+
 ######################################################################################
 # 1/f slope
 tstmod.a <- glm(a_slope ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)

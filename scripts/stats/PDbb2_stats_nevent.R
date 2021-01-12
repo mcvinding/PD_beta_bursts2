@@ -24,7 +24,8 @@ alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
 ggplot( aes(x=nevent.u.m2, fill=group), data=alldata) +
   geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
 
-# Group diff
+# CLEAN UP EVERYTHING IN THIS SECTION
+# Group diff 
 # t.test(nevent.b.m2~group, data=alldata)
 t.test(nevent.u.m2~group, data=alldata)
 
@@ -69,13 +70,32 @@ tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
 anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
       test="Chisq")
 
-# anova(tstmod.a, test="Chisq")
-
 new.dat <- alldata
 new.dat$pred <- exp(predict(tstmod2.4, re.form=NA))
 ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=new.dat)+
   geom_point()+
   geom_line(aes(y = pred, linetype=sex), size = 1)
+
+
+# No square term
+tstmod.8 <- glm(nevent.u.m2 ~ age.centerd*sex*group, data=alldata, family=poisson)
+tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
+tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)
+tstmod.5 <- update(tstmod.6, ~. -group:sex)
+tstmod.4 <- update(tstmod.5, ~. -group:age.centerd)
+tstmod.3 <- update(tstmod.4, ~. -sex)
+tstmod.2 <- update(tstmod.3, ~. -age.centerd)
+tstmod.1 <- update(tstmod.2, ~. -group)
+
+anova(tstmod.1,tstmod.2,tstmod.3,tstmod.4,tstmod.5,tstmod.6,tstmod.7,tstmod.8, test="Chisq")
+
+# Plot top model
+new.dat <- alldata
+new.dat$pred <- exp(predict(tstmod.8, re.form=NA))
+ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=new.dat)+
+  geom_point()+
+  geom_line(aes(y = pred, linetype=sex), size = 1)
+
 
 ######################################################################################
 ## THICK

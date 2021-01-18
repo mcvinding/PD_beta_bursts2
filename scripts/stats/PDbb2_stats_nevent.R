@@ -5,6 +5,7 @@ library(arm)
 library(ggplot2)
 library(BayesFactor)
 library(brms)
+library(car)
 # Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";")) # Needed or there will be a pop-up everytime compiling C models.
 # Sys.setenv(BINPREF = "C:/Rtools/mingw_$(WIN)/bin/")
 # Bayes?
@@ -15,80 +16,40 @@ load('X://PD_longrest//groupanalysis//alldata_subj.Rdata')
 
 ## Center variables
 alldata$age.centerd <- alldata$age-mean(alldata$age)
-alldata$age.min <- alldata$age-min(alldata$age)
+# alldata$age.min <- alldata$age-min(alldata$age)
 alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
 
 # Inspect hist
-# ggplot( aes(x=nevent.b.m2, fill=group), data=alldata) +
-#   geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
 ggplot( aes(x=nevent.u.m2, fill=group), data=alldata) +
   geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
 
-# CLEAN UP EVERYTHING IN THIS SECTION
-# Group diff 
-# t.test(nevent.b.m2~group, data=alldata)
-t.test(nevent.u.m2~group, data=alldata)
-
 # Inspect ~age
-ggplot(aes(x=age, y=nevent.b.m2, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_smooth(method=lm)
 ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=alldata)+
   geom_point()+
   geom_smooth(method=lm)
 
-## Polynomial variables
-# nmod.b.m2 <- glm(nevent.b.m2 ~ I(age.centerd^2)*age.centerd*sex*group, data=alldata, family=poisson)
-nmod.u.m2 <- glm(nevent.u.m2 ~ I(age.centerd^2)*age.centerd*sex*group, data=alldata, family=poisson)
-# summary(nmod.b.m2)
-summary(nmod.u.m2)
-
-anova(nmod.u.m2, test="Chisq")
-
-new.dat <- alldata
-new.dat$pred <- exp(predict(nmod.b.m2, re.form=NA))
-
-ggplot(aes(x=age, y=nevent.b.m2, color=group, shape=sex), data=new.dat)+
-  geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
-
 ######################################################################################
-# TEST
-tstmod.a <- glm(nevent.u.m2 ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=poisson)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+# LMER regression model
+tstmod.8 <- glm(nevent.u.m2 ~ (age.centerd+sex+group+thick.centerd)^2, data=alldata, family=poisson)
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-new.dat <- alldata
-new.dat$pred <- exp(predict(tstmod2.4, re.form=NA))
-ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=new.dat)+
-  geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
-
-
-######################################################################################
-# No square term
-tstmod.8 <- glm(nevent.u.m2 ~ age.centerd*sex*group, data=alldata, family=poisson)
 tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
 tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)
 tstmod.5 <- update(tstmod.6, ~. -group:sex)
 tstmod.4 <- update(tstmod.5, ~. -group:age.centerd)
 tstmod.3 <- update(tstmod.4, ~. -sex)
+
 tstmod.2 <- update(tstmod.3, ~. -age.centerd)
 tstmod.1 <- update(tstmod.2, ~. -group)
 
 anova(tstmod.1,tstmod.2,tstmod.3,tstmod.4,tstmod.5,tstmod.6,tstmod.7,tstmod.8, test="Chisq")
+
+anova(tstmod.8, test="Chisq")
+summary(tstmod.8, test="Chisq")
+vif(tstmod.8)
+
+
+
+
 
 # Plot top model
 new.dat <- alldata

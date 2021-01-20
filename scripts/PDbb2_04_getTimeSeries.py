@@ -15,7 +15,7 @@ from sensorymotorROI import make_sensorymotorROI
 import scipy.io as sio
 
 #%% Run settings
-overwrite = True
+overwrite = False
 
 no_stc = []
 
@@ -23,13 +23,13 @@ no_stc = []
 for subj in subjects:
     print('Processing subj '+subj)
     subj_path   = op.join(meg_path, subj)
-    rawfile     = op.join(subj_path, subj+'-ica-raw.fif')
+    rawfile     = op.join(subj_path, subj+'-ica-raw2.fif')
     covfile     = op.join(subj_path, subj+'-cov.fif') 
     fwdfile     = op.join(subj_path, subj+'-'+spacing+'-fwd.fif')
     srcfile     = op.join(subj_path, subj+'-'+spacing+'-src.fif')
-    stcfile     = op.join(subj_path, subj+'-dspm-lh.stc')
+    stcfile     = op.join(subj_path, subj+'-dspm2-lh.stc')
 
-    outrawtc    = op.join(subj_path, subj+'-ts-rawtc')      # Raw time-series
+    outrawtc    = op.join(subj_path, subj+'-ts-rawtc2')      # Raw time-series
 
     if op.exists(outrawtc+'-lh.mat') and not overwrite:
         print('File '+outrawtc+' exists. Continue!')
@@ -53,7 +53,7 @@ for subj in subjects:
 
         # Extract label time-series
         label_tc = stc.extract_label_time_course(lab, src, mode='pca_flip')[0,:]
-        label_tc  = np.float64(label_tc)
+        label_tc = np.float64(label_tc)
         
         if not op.exists(outrawtc) or overwrite:
             sio.savemat(outrawtc+'-'+hemi+'.mat', dict(label_tc=label_tc))

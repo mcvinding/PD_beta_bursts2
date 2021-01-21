@@ -6,7 +6,7 @@ folder for inspection.
 @author: mikkel
 """
 import matplotlib.pyplot as plt
-#import mne
+import mne
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA, annotate_muscle_zscore
 from mne.io import read_raw_fif, RawArray
 from mne import pick_types, find_events, make_fixed_length_events, Epochs
@@ -41,16 +41,15 @@ startTrigger = 1
 stopTrigger  = 64
 
 # Logs for data cleaning reporting (merge to DataFrame later)
-log_subj = []   # Subj id
-log_len = []    # Length of cleanded segment
-log_drop = []   # MNE drop log
-log_ica = []    # N ICA components removed
+log_subj = [''] *len(subjects_and_dates)   # Subj id
+log_len  = [0]*len(subjects_and_dates)     # Length of cleanded segment
+log_drop = [0]*len(subjects_and_dates)     # MNE drop log
+log_ica  = [0]*len(subjects_and_dates)     # N ICA components removed
 
 #%% RUN
-for subj_date in subjects_and_dates:   
+for ii, subj_date in enumerate(subjects_and_dates):
 
     subj = subj_date.split('/')[0][-4:]
-    log_subj += [subj]
     print('Now processing subject '+subj)
     
     # Define paths and filenames (this outght to be done in the config file)
@@ -87,22 +86,21 @@ for subj_date in subjects_and_dates:
     else:
         inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
   
-    # Load data
+    # Load  data
     fname = inFiles[0]
     raw = read_raw_fif(fname, preload=True)
-                    
+
     # Initial rejection of segments with muscle movements
     annot_muscle, scores_muscle = annotate_muscle_zscore(raw, ch_type="mag", threshold=threshold_muscle, min_length_good=0.2)
-    
-    # Plot as save for inspection
+    raw.set_annotations(annot_muscle)
+
+    # Plot and save for inspection
     fig, ax = plt.subplots()
     ax.plot(raw.times, scores_muscle)
     ax.axhline(y=threshold_muscle, color='r')
     ax.set(xlabel='time, (s)', ylabel='zscore', title='Muscle activity (Z-score)')
     fig.savefig(op.join(fig_path,'muscle_artefact.png'))
     plt.close()
-    
-    raw.set_annotations(annot_muscle)
     
     # Inspect
     # raw.plot()
@@ -169,8 +167,6 @@ for subj_date in subjects_and_dates:
     n_chans = len(pseudoepo.info['ch_names'])
     data = pseudoepo.get_data().transpose(1,0,2).reshape(n_chans,-1)
     raw_cln = RawArray(data, raw.info)
-    log_len += [raw_cln.last_samp/raw_cln.info['sfreq']]
-    log_drop += [pseudoepo.drop_log_stats()]
 
     # RUN ICA
     ica = ICA(n_components=0.95, method='fastica', random_state=0)
@@ -231,7 +227,6 @@ for subj_date in subjects_and_dates:
     # Plot components
     ica_fig = ica.plot_components()
     [fig.savefig(op.join(fig_path,'ICA_allComp'+str(i)+'.png')) for i, fig in enumerate(ica_fig)]
-    log_ica.append(len(ica.exclude))
 
     # Apply  ICA to Raw
     raw_ica = ica.apply(raw_cln)
@@ -247,6 +242,13 @@ for subj_date in subjects_and_dates:
     fig = raw_ica.plot_psd(tmax=np.inf, fmax=55, dB=True)
     fig.savefig(op.join(fig_path,'PSD_cln.png'))
     plt.close()
+    
+    # Get summaries for log
+    ica = mne.preprocessing.read_ica(out_icaFname)
+    log_subj[ii] = subj
+    log_len[ii]  = raw_cln.last_samp/raw_cln.info['sfreq']
+    log_drop[ii] = pseudoepo.drop_log_stats()
+    log_ica[ii]  = len(ica.exclude)
 
     print('----------- FINISHED '+subj+' -----------------')
     plt.close('all')

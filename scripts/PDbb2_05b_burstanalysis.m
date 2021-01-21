@@ -8,12 +8,14 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 1;   % Overwirte old files 0=false or 1=true
+overwrite = 0;   % Overwirte old files 0=false or 1=true
 
-labels  = {'lh_roi','rh_roi'};
+labels  = {'lh_roi'};
 
 %% Choose threshold
-load('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat')
+load('/home/mikkel/PD_longrest/groupanalysis/rhomats2.mat')
+rhomat_beta = rhomat_beta(:,:,1);
+rhomat_mube = rhomat_mube(:,:,1);
 cutoff_beta = find_threshold(rhomat_beta, 0:0.1:4, 1); title('Threshold')
 cutoff_mube = find_threshold(rhomat_mube, 0:0.1:4, 1); title('Threshold')
 
@@ -29,23 +31,23 @@ cfg.channel     = 'lh_roi';
 % cut_lh = nan(size(subjects));
 % cut_rh = nan(size(subjects));
 
-for ss = 41:length(subjects)
+for ss = 1:length(subjects)
     subj = subjects{ss};
     fprintf('Reading subj %s (%i of %i)\n', subj, ss, length(subjects))
 
     % Load hilbert data
-    infile_b = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt.mat');
-    infile_u = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt.mat');
+    infile_b = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt2.mat');
+    infile_u = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt2.mat');
 
     % Different outputs mu (u) and beta (b), avg thresholds (m1), 2x median (m2),
     % and percentile (pc)
-    outfname_b_m2 = fullfile(dirs.meg_path, subj,[subj,'-b_m2-burst.mat']);
-    outfname_b_m1 = fullfile(dirs.meg_path, subj,[subj,'-b_m1-burst.mat']);
-    outfname_b_pc = fullfile(dirs.meg_path, subj,[subj,'-b_pc-burst.mat']);
-    outfname_u_m2 = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst.mat']);
-    outfname_u_m1 = fullfile(dirs.meg_path, subj,[subj,'-u_m1-burst.mat']);
-    outfname_u_pc = fullfile(dirs.meg_path, subj,[subj,'-u_pc-burst.mat']);
-    
+    outfname_b_m2 = fullfile(dirs.meg_path, subj,[subj,'-b_m2-burst2.mat']);
+    outfname_b_m1 = fullfile(dirs.meg_path, subj,[subj,'-b_m1-burst2.mat']);
+    outfname_b_pc = fullfile(dirs.meg_path, subj,[subj,'-b_pc-burst2.mat']);
+    outfname_u_m2 = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst2.mat']);
+    outfname_u_m1 = fullfile(dirs.meg_path, subj,[subj,'-u_m1-burst2.mat']);
+    outfname_u_pc = fullfile(dirs.meg_path, subj,[subj,'-u_pc-burst2.mat']);
+ 
     % Init
     burstsummary_b_m1 = [];
     burstsummary_b_m2 = [];
@@ -54,10 +56,10 @@ for ss = 41:length(subjects)
     burstsummary_u_m2 = [];   
     burstsummary_u_pc = [];
 
-%     if exist(outfname,'file') && ~overwrite
-%         warning('File %s exists. Continue!', outfname);
-%         continue
-%     end
+    if exist(outfname_b_m2,'file') && ~overwrite
+        warning('File %s exists. Continue!', outfname);
+        continue
+    end
 %     
     % Load data
     load(infile_b); % Hilbert beta

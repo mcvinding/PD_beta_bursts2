@@ -11,8 +11,8 @@ library(car)
 # Bayes?
 
 ## Load data
-load('X://PD_longrest//groupanalysis//alldata_subj.Rdata')
-# load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
+load('X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
+# load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
 
 ## Center variables
 alldata$age.centerd <- alldata$age-mean(alldata$age)
@@ -20,11 +20,11 @@ alldata$age.centerd <- alldata$age-mean(alldata$age)
 alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
 
 # Inspect hist
-ggplot( aes(x=nevent.u.m2, fill=group), data=alldata) +
-  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=50)
+ggplot( aes(x=nevent.u.m2.min, fill=group), data=alldata) +
+  geom_histogram(color="black", alpha=0.6, position = 'identity', bins=25)
 
 # Inspect ~age
-ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=alldata)+
+ggplot(aes(x=age, y=nevent.u.m2.min, color=group, shape=sex), data=alldata)+
   geom_point()+
   geom_smooth(method=lm)
 

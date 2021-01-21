@@ -46,7 +46,7 @@ for ii, subj in enumerate(subjects):
 
     hemi = 'lh'
     subj_path   = op.join(meg_path, subj)
-    psdfname    = op.join(subj_path, subj+'-ts-psd'+hemi+'.mat')
+    psdfname    = op.join(subj_path, subj+'-ts-psd2'+hemi+'.mat')
     figdir      = op.join(subj_path, 'plots')
     if not op.exists(figdir):
         mkdir(figdir)
@@ -62,7 +62,7 @@ for ii, subj in enumerate(subjects):
     # Report: fit the model, print the resulting parameters, and plot the reconstruction
     fm.report(all_freqs[ii,], all_psd[ii,], freq_range)
     plt.title(subj)
-    plt.savefig(op.join(figdir, 'fooof_psd.jpg'))
+    plt.savefig(op.join(figdir, 'fooof_psd2.jpg'))
     plt.close()
 
 #%% FOOOF analysis
@@ -108,6 +108,6 @@ df_dct = {'subj':subjects,
 df = pandas.DataFrame(df_dct)
 
 # save to csv    
-df.to_csv('/home/mikkel/PD_longrest/groupanalysis/fooof_df.csv', index=False, sep=';')
+df.to_csv('/home/mikkel/PD_longrest/groupanalysis/fooof_df2.csv', index=False, sep=';')
 
 #END

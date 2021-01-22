@@ -30,7 +30,7 @@ ggplot(aes(x=age, y=nevent.u.m2.min, color=group, shape=sex), data=alldata)+
 
 ######################################################################################
 # LMER regression model
-tstmod.8 <- glm(nevent.u.m2 ~ (age.centerd+sex+group+thick.centerd)^2, data=alldata, family=poisson)
+tstmod.8 <- glm(nevent.u.m2.min ~ (age.centerd+sex+group+thick.centerd)^2, data=alldata, family=poisson)
 
 tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
 tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)

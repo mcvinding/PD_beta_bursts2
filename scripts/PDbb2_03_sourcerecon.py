@@ -15,7 +15,7 @@ sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects, meg_path, spacing
 
 #%% Run settings
-overwrite = True
+overwrite = False
 
 #% Initiate values
 conductivity = (0.3,)
@@ -31,8 +31,6 @@ no_fwd = []
 
 #%% SUBJECT LOOP HERE ####
 for subj in subjects:
-#    if subj == '0522':
-#        continue
     print('NOW PROCESSING: '+subj)
     
     subj_path   = op.join(meg_path, subj)

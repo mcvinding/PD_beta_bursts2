@@ -113,7 +113,7 @@ for ii, subj_date in enumerate(subjects_and_dates):
     raw.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
 
     # Find events and crop data
-    eve = find_events(raw, stim_channel='STI101')
+    eve = find_events(raw, stim_channel='STI101', initial_event=True)
     
     # Inspect
     # raw.plot(eve)

@@ -15,7 +15,7 @@ sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects_and_dates, meg_path, raw_path, old_raw_path, old_subjs, empt_filestring, old_empt_filestring
 
 #%% Run options
-overwrite = True      # Wheter files should be overwritten if already exist
+overwrite = False      # Wheter files should be overwritten if already exist
 
 # Filter options
 bandpass_freqs = [None, 48]
@@ -35,7 +35,7 @@ for subj_date in subjects_and_dates:
     else:
         raw_fpath = op.join(raw_path, subj_date)
 
-    fig_path = op.join(meg_path, subj, 'ica')
+    fig_path = op.join(meg_path, subj, 'plots')
     outFname = op.join(meg_path, subj, subj+'-cov.fif')
     outTemp  = op.join(meg_path, subj, subj+'-empt-raw.fif')
         
@@ -73,9 +73,6 @@ for subj_date in subjects_and_dates:
                            stim=False, exclude='bads')
     raw_temp.notch_filter(notch_freqs, n_jobs=3, picks=picks_meg)
     raw_temp.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_meg)
-    
-    # Load ICA
-    # ...
 
     # Estimate cov
     noise_cov = compute_raw_covariance(raw_temp, tmin=0, tmax=120, rank='info')

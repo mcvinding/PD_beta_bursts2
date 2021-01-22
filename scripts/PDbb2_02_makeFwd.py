@@ -43,11 +43,11 @@ for subj in subjects:
         print(trans_fname+' doen not exists for subj '+subj+'. Continue!')
         no_trans += [subj]
         continue
-    elif not op.exists(bem_surf_fname):
+    if not op.exists(bem_surf_fname):
         print(bem_surf_fname+' doen not exists for subj '+subj+'. Continue!')
         no_bem += [subj]
         continue
-    elif not op.exists(raw_fname):          
+    if not op.exists(raw_fname):          
         print(raw_fname+' doen not exists for subj '+subj+'. Continue!')
         continue    
     

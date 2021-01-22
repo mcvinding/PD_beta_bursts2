@@ -91,6 +91,4 @@ exceptions = {
 #%% Settings
 spacing = 'ico4'
 
-
-
 #END

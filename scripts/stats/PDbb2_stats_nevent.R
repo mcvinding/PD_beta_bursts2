@@ -11,7 +11,7 @@ library(car)
 # Bayes?
 
 ## Load data
-load('X://PD_longrest//groupanalysis//alldata_subj.Rdata')
+load('X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 # load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
 
 ## Center variables
@@ -30,22 +30,46 @@ ggplot(aes(x=age, y=nevent.u.m2, color=group, shape=sex), data=alldata)+
 
 ######################################################################################
 # LMER regression model
-tstmod.8 <- glm(nevent.u.m2 ~ (age.centerd+sex+group+thick.centerd)^2, data=alldata, family=poisson)
+tstmod.Full3 <- glm(nevent.u.m2.min ~ (age.centerd+sex+group+thick.centerd)^3, data=alldata, family=poisson)
 
-tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
-tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)
-tstmod.5 <- update(tstmod.6, ~. -group:sex)
-tstmod.4 <- update(tstmod.5, ~. -group:age.centerd)
-tstmod.3 <- update(tstmod.4, ~. -sex)
+tstmod.ASG <- update(tstmod.Full3, ~. -group:sex:age.centerd)
+tstmod.AST <- update(tstmod.Full3, ~. -group:sex:thick.centerd)
+tstmod.AGT <- update(tstmod.Full3, ~. -group:age.centerd:thick.centerd)
+tstmod.GST <- update(tstmod.Full3, ~. -group:sex:thick.centerd)
+anova(tstmod.Full3,tstmod.ASG, test="Chisq")
+anova(tstmod.Full3,tstmod.AST, test="Chisq")
+anova(tstmod.Full3,tstmod.AGT, test="Chisq")
+anova(tstmod.Full3,tstmod.GST, test="Chisq")
 
-tstmod.2 <- update(tstmod.3, ~. -age.centerd)
-tstmod.1 <- update(tstmod.2, ~. -group)
+tstmod.Full2 <- glm(nevent.u.m2.min ~ (age.centerd+sex+group+thick.centerd)^2, data=alldata, family=poisson)
 
-anova(tstmod.1,tstmod.2,tstmod.3,tstmod.4,tstmod.5,tstmod.6,tstmod.7,tstmod.8, test="Chisq")
+tstmod.SA <- update(tstmod.Full2, ~. -sex:age.centerd)
+tstmod.GS <- update(tstmod.Full2, ~. -group:sex)
+tstmod.GA <- update(tstmod.Full2, ~. -group:age.centerd)
+tstmod.GT <- update(tstmod.Full2, ~. -sex:thick.centerd)
+tstmod.ST <- update(tstmod.Full2, ~. -sex:thick.centerd)
+tstmod.AT <- update(tstmod.Full2, ~. -age.centerd:thick.centerd)
+anova(tstmod.Full2,tstmod.SA, test="Chisq")
+anova(tstmod.Full2,tstmod.GS, test="Chisq")
+anova(tstmod.Full2,tstmod.GA, test="Chisq")
+anova(tstmod.Full2,tstmod.GT, test="Chisq")
+anova(tstmod.Full2,tstmod.ST, test="Chisq")
+anova(tstmod.Full2,tstmod.AT, test="Chisq")
 
-anova(tstmod.8, test="Chisq")
-summary(tstmod.8, test="Chisq")
-vif(tstmod.8)
+tstmod.Full1 <- glm(nevent.u.m2.min ~ age.centerd+sex+group+thick.centerd, data=alldata, family=poisson)
+tstmod.A <- update(tstmod.Full1, ~. -age.centerd)
+tstmod.S <- update(tstmod.Full1, ~. -sex)
+tstmod.G <- update(tstmod.Full1, ~. -group)
+tstmod.T <- update(tstmod.Full1, ~. -thick.centerd)
+anova(tstmod.Full1,tstmod.A, test="Chisq")
+anova(tstmod.Full1,tstmod.S, test="Chisq")
+anova(tstmod.Full1,tstmod.G, test="Chisq")
+anova(tstmod.Full1,tstmod.T, test="Chisq")
+
+
+anova(tstmod.Full3, test="Chisq")
+summary(tstmod.Full3, test="Chisq")
+vif(tstmod.Full)
 
 
 

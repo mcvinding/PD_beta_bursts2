@@ -26,8 +26,8 @@ for subj in subjects:
         
     hemi = 'lh'
     subj_path   = op.join(meg_path, subj)
-    tcfname     = op.join(subj_path, subj+'-ts-rawtc-'+hemi+'.mat')            # Raw time-series
-    psdfname    = op.join(subj_path, subj+'-ts-psd'+hemi+'.mat')
+    tcfname     = op.join(subj_path, subj+'-ts-rawtc2-'+hemi+'.mat')            # Raw time-series
+    psdfname    = op.join(subj_path, subj+'-ts-psd2'+hemi+'.mat')
     
     # Load data
     dat = sio.loadmat(tcfname)['label_tc'][0]    

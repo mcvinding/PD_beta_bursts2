@@ -9,10 +9,10 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 1;   % Overwirte old files 0=false or 1=true
+overwrite = 0;   % Overwirte old files 0=false or 1=true
 
 steps   = 0:0.1:4;
-labels  = {'lh_roi','rh_roi'};
+labels  = {'lh_roi'};
 fsample = 1000; %Hz
 
 %% Run across thrershold to find optimum
@@ -23,24 +23,24 @@ for ss = 1:length(subjects)
     subj = subjects{ss};
     fprintf('Now loading subj %s...\n', subj)
     % Input
-    infile_rh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc-rh.mat']);
-    infile_lh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc-lh.mat']);
+    infile_rh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc2-rh.mat']);
+    infile_lh = fullfile(dirs.meg_path, subj,[subj,'-ts-rawtc2-lh.mat']);
     
     % Output
-    outfname_raw = fullfile(dirs.meg_path, subj, 'roidata.mat');
-    outfname_beta_hlb = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt.mat');
-    outfname_mube_hlb = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt.mat');
+    outfname_raw = fullfile(dirs.meg_path, subj, 'roidata2.mat');
+    outfname_beta_hlb = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt2.mat');
+    outfname_mube_hlb = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt2.mat');
 
     % Load data
-    load(infile_rh);
-    rh_dat = label_tc;
+%     load(infile_rh);
+%     rh_dat = label_tc;
     load(infile_lh);
     lh_dat = label_tc;
     clear label_tc
     
     % Make pseudo data
     roidata = [];
-    roidata.trial      = {[lh_dat; rh_dat]};
+    roidata.trial      = {lh_dat};
     roidata.time       = {(1:length(lh_dat))/fsample};
     roidata.label      = labels;
     roidata.fsample    = fsample;
@@ -102,11 +102,13 @@ for ss = 1:length(subjects)
     end
 end
 
-save('/home/mikkel/PD_longrest/groupanalysis/rhomats.mat','rhomat_beta', 'rhomat_mube')
+save('/home/mikkel/PD_longrest/groupanalysis/rhomats2.mat','rhomat_beta', 'rhomat_mube')
 disp('done')
 
 %% Find cutoff
-
+% load('/home/mikkel/PD_longrest/groupanalysis/rhomats')
+rhomat_beta = rhomat_beta(:,:,1)
+rhomat_mube = rhomat_mube(:,:,1)
 threshold = find_threshold(rhomat_beta, steps, 1); title('Threshold')
 threshold = find_threshold(rhomat_mube, steps, 1); title('Threshold')
 

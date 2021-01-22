@@ -104,7 +104,7 @@ clindata <- merge(sdata, udata, by.x="subj", by.y="subj")
 
 # SAVE
 save(clindata, file='X://PD_longrest//groupanalysis//clindata.Rdata')
-write.csv(clindata, file='X://PD_longrest//groupanalysis//clindata.csv', sep=";")
+write.csv(clindata, file='X://PD_longrest//groupanalysis//clindata.csv')
 
 # (re)load
 load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
@@ -147,62 +147,61 @@ lh.roi.thick <- subset(roi.thick, hemi=='lh')
 # %%% IMPORT PSD DATA %%%
 ###########################################################################################
 
-fooof.data <- read.csv('X://PD_longrest//groupanalysis//fooof_df.csv', sep=";")
+fooof.data <- read.csv('X://PD_longrest//groupanalysis//fooof_df2.csv', sep=";")
 fooof.data$subj <- paste("0",fooof.data$subj, sep="")
 
 ###########################################################################################
 # %%% IMPORT N EVENT DATA %%%
 ###########################################################################################
 # Read N event data
-temp <- readMat("neve_b_m1_data.mat")
+temp <- readMat("neve_b_m1_data2.mat")
 # hemi <- as.factor(unlist(temp$hemiN))
 # nevent.b.m1 <- temp$nevent.b.m1
 subj <- as.factor(unlist(temp$subjects))
 
 # XXX: SORT !!!!
-temp2 <- readMat("neve_b_m2_data.mat")
-temp3 <- readMat("neve_b_pc_data.mat")
-temp4 <- readMat("neve_u_m1_data.mat")
-temp5 <- readMat("neve_u_m2_data.mat")
-temp6 <- readMat("neve_u_pc_data.mat")
+temp2 <- readMat("neve_b_m2_data2.mat")
+temp3 <- readMat("neve_b_pc_data2.mat")
+temp4 <- readMat("neve_u_m1_data2.mat")
+temp5 <- readMat("neve_u_m2_data2.mat")
+temp6 <- readMat("neve_u_pc_data2.mat")
 
 neve.data <- data.frame(nevent.b.m2=temp2$nevent.b.m2,
                         nevent.u.m2=temp5$nevent.u.m2,
+                        nevent.u.m1=temp4$nevent.u.m1,
+                        nevent.b.m1=temp$nevent.b.m1,
                         subj=subj)
-neve.data$nevent.min <- round(neve.data$nevent/3)
+
+# Get BPM
+data.log <- read.csv('X:\\PD_longrest\\groupanalysis\\data_log.csv')
+data.log$subj <- as.factor(data.log$subj)
+data.log$subj <- paste("0",data.log$subj, sep="")
+
+neve.data <- merge(neve.data, data.log, by="subj", all=FALSE)
+neve.data$data_length.min <- neve.data$data_length/60
+neve.data$nevent.b.m1.min <- round(neve.data$nevent.b.m1/neve.data$data_length.min)
+neve.data$nevent.b.m2.min <- round(neve.data$nevent.b.m2/neve.data$data_length.min)
+neve.data$nevent.u.m1.min <- round(neve.data$nevent.u.m1/neve.data$data_length.min)
+neve.data$nevent.u.m2.min <- round(neve.data$nevent.u.m2/neve.data$data_length.min)
 
 # Merge data frames
 ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
 
 # Save
-save(ndata, file='X://PD_longrest//groupanalysis//ndata_all.Rdata')
-# write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata.csv')
+save(ndata, file='X://PD_longrest//groupanalysis//ndata_all2.Rdata')
+write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata_all2.csv')
 
 # (re)load
-load(file='X://PD_longrest//groupanalysis//ndata_all.Rdata')
-
-###########################################################################################
-# %%% IMPORT MISC DATA %%%
-###########################################################################################
-# TS skewness + kurtosis
-temp.skw <- readMat('skw.mat')
-temp.krt <- readMat('krt.mat')
-subjs <- as.factor(unlist(temp.skw$subjects))
-miscdat <- data.frame(subj=subjs,
-                      skw.b=temp.skw$skw.b,
-                      skw.u=temp.skw$skw.u,
-                      krt.b=temp.krt$krt.b,
-                      krt.u=temp.krt$krt.u)
+load(file='X://PD_longrest//groupanalysis//ndata_all2.Rdata')
 
 ###########################################################################################
 # %%% COLLECT ALL DATA INTO ONE %%%
 ###########################################################################################
 tmpdat1 <- merge(ndata, lh.roi.thick, by=c("subj"))
 tmpdat2 <- merge(tmpdat1, fooof.data, by=c("subj"))
-tmpdat3 <- merge(tmpdat2, miscdat, by=c("subj"))
-alldata <- merge(tmpdat3, udata, by=c("subj"), all.x=TRUE)
+alldata <- merge(tmpdat2, udata, by=c("subj"), all.x=TRUE)
 
-save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
-write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj.csv')
+save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
+write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.csv')
 
 #END

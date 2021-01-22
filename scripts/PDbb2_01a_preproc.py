@@ -6,22 +6,23 @@ folder for inspection.
 @author: mikkel
 """
 import matplotlib.pyplot as plt
-#import mne
+import mne
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA, annotate_muscle_zscore
-from mne.io import read_raw_fif
-from mne import pick_types, find_events
+from mne.io import read_raw_fif, RawArray
+from mne import pick_types, find_events, make_fixed_length_events, Epochs
 from os import listdir, mkdir
 import os.path as op
 import numpy as np
+import pandas as pd
 import sys
 sys.path.append('/home/mikkel/PD_longrest/scripts')
 from PDbb2_SETUP import subjects_and_dates, raw_path, meg_path, exceptions, filestring, old_subjs, old_raw_path, old_filestring
 
 # %% run options
-overwrite_old_files = True     # Wheter files should be overwritten if already exist
+overwrite_old_files = False     # Wheter files should be overwritten if already exist
 
 # Muscle artefact detection
-threshold_muscle = 6  # z-score
+threshold_muscle = 5  # z-score
 
 # bandpass filter
 bandpass_freqs = [None, 48]
@@ -38,14 +39,15 @@ reject = dict(grad=4000e-13,    # T / m (gradiometers)
 
 startTrigger = 1
 stopTrigger  = 64
-    
-# For debugging/diagnostics
-missing_list=[]
-error_list=[]
-trigger_err=[]
+
+# Logs for data cleaning reporting (merge to DataFrame later)
+log_subj = [''] *len(subjects_and_dates)   # Subj id
+log_len  = [0]*len(subjects_and_dates)     # Length of cleanded segment
+log_drop = [0]*len(subjects_and_dates)     # MNE drop log
+log_ica  = [0]*len(subjects_and_dates)     # N ICA components removed
 
 #%% RUN
-for subj_date in subjects_and_dates:   
+for ii, subj_date in enumerate(subjects_and_dates):
 
     subj = subj_date.split('/')[0][-4:]
     print('Now processing subject '+subj)
@@ -57,9 +59,10 @@ for subj_date in subjects_and_dates:
         raw_fpath   = op.join(raw_path, subj_date)
 
     sub_path        = op.join(meg_path, subj)
-    ica_path        = op.join(meg_path, subj, 'ica')
-    out_icaFname    = op.join(ica_path, 'comp-ica.fif')            # Name of ICA component (saved for bookkeeping)
-    outfname        = op.join(sub_path, subj+'-ica-raw.fif')
+    ica_path        = op.join(sub_path, 'ica')
+    fig_path        = op.join(sub_path, 'plots')
+    out_icaFname    = op.join(ica_path, 'comp-ica2.fif')         # Name of ICA component (saved for bookkeeping)
+    outfname        = op.join(sub_path, subj+'-ica-raw2.fif')
     
     if op.exists(outfname) and not overwrite_old_files:
         print('Output '+outfname+' already exists')
@@ -70,6 +73,8 @@ for subj_date in subjects_and_dates:
         mkdir(sub_path)
     if not op.exists(ica_path):
         mkdir(ica_path)      
+    if not op.exists(fig_path):
+        mkdir(fig_path)      
 
     # Find all files for same subject to run ICA on. The first step is to accomodate
     # files that have been split in two or more files.
@@ -81,24 +86,24 @@ for subj_date in subjects_and_dates:
     else:
         inFiles = [op.join(raw_fpath,f) for f in file_list if filestring in f]
   
-    # Load data (This loop will make sure that split files are read toghether)
+    # Load  data
     fname = inFiles[0]
     raw = read_raw_fif(fname, preload=True)
-                    
-    # Initial cleaning
+
+    # Initial rejection of segments with muscle movements
     annot_muscle, scores_muscle = annotate_muscle_zscore(raw, ch_type="mag", threshold=threshold_muscle, min_length_good=0.2)
-    # Plot as save for inspection
+    raw.set_annotations(annot_muscle)
+
+    # Plot and save for inspection
     fig, ax = plt.subplots()
     ax.plot(raw.times, scores_muscle)
     ax.axhline(y=threshold_muscle, color='r')
-    ax.set(xlabel='time, (s)', ylabel='zscore', title='Muscle activity')
-    fig.savefig(op.join(ica_path,'muscle_artefact.png'))
+    ax.set(xlabel='time, (s)', ylabel='zscore', title='Muscle activity (Z-score)')
+    fig.savefig(op.join(fig_path,'muscle_artefact.png'))
     plt.close()
     
-    raw.set_annotations(annot_muscle)
-    
-#    # Inspect
-#    raw.plot()
+    # Inspect
+    # raw.plot()
         
     # Filter data
     print('Filtering....')
@@ -110,8 +115,8 @@ for subj_date in subjects_and_dates:
     # Find events and crop data
     eve = find_events(raw, stim_channel='STI101')
     
-#    # Inspect
-#    raw.plot(eve)
+    # Inspect
+    # raw.plot(eve)
     
     # Trigger exceptions
     if subj == '0333':                    # Missing triggers
@@ -142,85 +147,89 @@ for subj_date in subjects_and_dates:
         startSam = raw.first_samp+10000             
         stopSam = startSam+180102        
     else:
-        if not len(eve) == 2:
-            trigger_err += [subj]
-            continue
+        # if not len(eve) == 2:
+            # trigger_err += [subj]            
+            # continue
         startSam = eve[eve[:,2] == startTrigger,0][0]
         stopSam = eve[eve[:,2] == stopTrigger,0][0]
     
     raw.crop(tmin=(startSam - raw.first_samp ) / raw.info['sfreq'], tmax=(stopSam - raw.first_samp ) / raw.info['sfreq'])
-    
+
     # PSD for diagnostics
     fig = raw.plot_psd(tmax=np.inf, fmax=55, dB=True)
-    fig.savefig(op.join(ica_path,'PSD.png'))
+    fig.savefig(op.join(fig_path,'PSD_raw.png'))
     plt.close()
     
+    # Reject bad segments
+    dummyeve = make_fixed_length_events(raw, id=99, duration=1)
+    pseudoepo = Epochs(raw, dummyeve, tmin=0., tmax=0.999, baseline=None, reject=reject, reject_by_annotation=True)
+    pseudoepo.drop_bad()
+    n_chans = len(pseudoepo.info['ch_names'])
+    data = pseudoepo.get_data().transpose(1,0,2).reshape(n_chans,-1)
+    raw_cln = RawArray(data, raw.info)
+
     # RUN ICA
     ica = ICA(n_components=0.95, method='fastica', random_state=0)
-
-    ica.fit(raw, picks=picks_meg, decim=3, reject=reject, verbose=True, reject_by_annotation=True)
-#    ica.labels_ = dict()       # Old bugfix  
-    
-    # Plot and save
-    ica_fig = ica.plot_components()
-    [fig.savefig(op.join(ica_path,'ICA_allComp'+str(i)+'.png')) for i, fig in enumerate(ica_fig)]
+    ica.fit(raw_cln, picks=picks_meg, decim=3, reject=reject, verbose=True, reject_by_annotation=True)    
 
     # REMOVE COMPONENTS
-    picks_eXg = pick_types(raw.info, meg=False, eeg=False, eog=True, ecg = True, emg=False, misc=False, stim=False, exclude='bads')
-    raw.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_eXg)
-    raw.notch_filter(50, n_jobs=3, picks=picks_eXg)             # Remove residual 50Hz line noise
+    picks_eXg = pick_types(raw_cln.info, meg=False, eeg=False, eog=True, ecg = True, emg=False, misc=False, stim=False, exclude='bads')
+    raw_cln.filter(bandpass_freqs[0], bandpass_freqs[1], n_jobs=3, picks=picks_eXg)
+    raw_cln.notch_filter(50, n_jobs=3, picks=picks_eXg)             # Remove residual 50Hz line noise
     
     # Find ECG artifacts
-    ecg_epochs = create_ecg_epochs(raw, ch_name='ECG003', tmin=-.5, tmax=.5)    #, picks=picks)
+    ecg_epochs = create_ecg_epochs(raw_cln, ch_name='ECG003', tmin=-.5, tmax=.5)    #, picks=picks)
     ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps', verbose=False)
     
     # Update reject info
     ica.exclude += ecg_inds[:n_max_ecg]
 
     # Plot ECG ICs for inspection
-    ecg_scores_fig = ica.plot_scores(ecg_scores, exclude=ecg_inds, title='Component score (ecg)', show=True)
-    ecg_scores_fig.savefig(op.join(ica_path,'ICA_ecg_comp_score.png'))
+    ecg_scores_fig = ica.plot_scores(ecg_scores, exclude=ecg_inds, title='Component score (ECG)', show=True)
+    ecg_scores_fig.savefig(op.join(fig_path,'ICA_ecg_comp_score.png'))
     plt.close()
     
     if ecg_inds:
-        show_picks = np.abs(ecg_scores).argsort()[::-1][:5]
+        # show_picks = np.abs(ecg_scores).argsort()[::-1][:5]
         
-        ecg_comp_fig = ica.plot_components(ecg_inds, title='ecg comp', colorbar=True, show=False)
-        ecg_comp_fig.savefig(op.join(ica_path,'ICA_ecg_comp_topo.png'))
-        plt.close()
-        
-        # estimate average artifact
-        ecg_evoked = ecg_epochs.average()
-        
+        # ecg_comp_fig = ica.plot_components(ecg_inds, title='ecg comp', colorbar=True, show=False)
+        # ecg_comp_fig.savefig(op.join(fig_path,'ICA_ecg_comp_topo.png'))
+        # plt.close()
+                
         # plot ECG sources + selection
+        ecg_evoked = ecg_epochs.average()
         ecg_evo_fig1 = ica.plot_overlay(ecg_evoked, exclude=ecg_inds, show=False)    
-        ecg_evo_fig1.savefig(op.join(ica_path, 'ICA_ecg_overlay.png'))
+        ecg_evo_fig1.savefig(op.join(fig_path, 'ICA_ecg_overlay.png'))
         plt.close()
     
     # Find EOG artifacts 
-    eog_epochs = create_eog_epochs(raw, reject=reject, tmin=-.5, tmax=.5)  # get single EOG trials
-    eog_inds, eog_scores = ica.find_bads_eog(raw)
+    eog_epochs = create_eog_epochs(raw_cln, reject=reject, tmin=-.5, tmax=.5)  # get single EOG trials
+    eog_inds, eog_scores = ica.find_bads_eog(eog_epochs)
     
     # Update reject info
     ica.exclude += eog_inds[:n_max_eog]
 
     # Plot EOG ICs for inspection
     eog_scores_fig = ica.plot_scores(eog_scores, exclude=eog_inds, title='Component score (EOG)', show=True)
-    eog_scores_fig.savefig(op.join(ica_path, 'ICA_eog_comp_score.png'), show=False)
+    eog_scores_fig.savefig(op.join(fig_path, 'ICA_eog_comp_score.png'), show=False)
     plt.close()
 
     if eog_inds:
-        eog_comp_fig = ica.plot_components(eog_inds, title="Sources related to EOG artifacts", colorbar=True,show=False)
-        eog_comp_fig.savefig(op.join(ica_path, 'ICA_eog_comp.png'))
-        plt.close()
+        # eog_comp_fig = ica.plot_components(eog_inds, title="Sources related to EOG artifacts", colorbar=True,show=False)
+        # eog_comp_fig.savefig(op.join(fig_path, 'ICA_eog_comp.png'))
+        # plt.close()
                                   
         # plot EOG sources + selection
         eog_evo_fig = ica.plot_overlay(eog_epochs.average(), exclude=eog_inds, show=False)  # plot EOG cleaning
-        eog_evo_fig.savefig(op.join(ica_path, 'ICA_eog_overlay.png'))
+        eog_evo_fig.savefig(op.join(fig_path, 'ICA_eog_overlay.png'))
         plt.close()
-                    
+        
+    # Plot components
+    ica_fig = ica.plot_components()
+    [fig.savefig(op.join(fig_path,'ICA_allComp'+str(i)+'.png')) for i, fig in enumerate(ica_fig)]
+
     # Apply  ICA to Raw
-    raw_ica = ica.apply(raw)
+    raw_ica = ica.apply(raw_cln)
     
 #    # Inspect
 #    raw_ica.plot(eve)
@@ -228,8 +237,26 @@ for subj_date in subjects_and_dates:
     # Save
     raw_ica.save(outfname, overwrite=overwrite_old_files)
     ica.save(out_icaFname)
+    
+    # PSD for diagnostics
+    fig = raw_ica.plot_psd(tmax=np.inf, fmax=55, dB=True)
+    fig.savefig(op.join(fig_path,'PSD_cln.png'))
+    plt.close()
+    
+    # Get summaries for log
+    ica = mne.preprocessing.read_ica(out_icaFname)
+    log_subj[ii] = subj
+    log_len[ii]  = raw_cln.last_samp/raw_cln.info['sfreq']
+    log_drop[ii] = pseudoepo.drop_log_stats()
+    log_ica[ii]  = len(ica.exclude)
 
     print('----------- FINISHED '+subj+' -----------------')
-    plt.close('all')    
+    plt.close('all')
+    
+# %% Save data log
+dd = list(zip(log_subj, log_len, log_drop, log_ica))
+df = pd.DataFrame(dd, columns=['subj','data_length','drop_pct','ica_remove'])
+df.to_csv('/home/mikkel/PD_longrest/groupanalysis/data_log.csv', index = False, header=True)
 
+print('----------- FINISHED ALL -----------------')
 #END

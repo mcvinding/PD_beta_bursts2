@@ -1,6 +1,5 @@
 % Get various summaries of beta burst (explorative)
-clear all
-close all
+clear all; close all
 addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
 addpath('/home/mikkel/beta_bursts/functions')
@@ -18,7 +17,6 @@ nevent_b_pc = nan(length(subjects), 1);
 nevent_u_m1 = nan(length(subjects), 1);
 nevent_u_m2 = nan(length(subjects), 1);
 nevent_u_pc = nan(length(subjects), 1);
-% nevent_rh = nan(length(subjects), 1);
 
 % Event length
 len_b_m1 = [];
@@ -27,7 +25,6 @@ len_b_pc = [];
 len_u_m1 = [];
 len_u_m2 = [];
 len_u_pc = [];
-% len_rh = [];
 
 % Mak event peak
 max_b_m1 = [];
@@ -36,7 +33,6 @@ max_b_pc = [];
 max_u_m1 = [];
 max_u_m2 = [];
 max_u_pc = [];
-% max_rh = [];
 
 % Time until event
 tue_b_m1 = [];
@@ -54,9 +50,6 @@ sub_b_pc = [];
 sub_u_m1 = [];
 sub_u_m2 = [];
 sub_u_pc = [];
-% sub_rh = [];
-
-% cut = nan(length(subjects),2);
 
 %% Run
 for ii = 1:length(subjects)
@@ -64,12 +57,12 @@ for ii = 1:length(subjects)
     fprintf('Reading subj %s (%i of %i)\n', subj, ii, length(subjects))
     
     % Load data
-    infname_b_m2 = fullfile(dirs.meg_path, subj,[subj,'-b_m2-burst.mat']);
-    infname_b_m1 = fullfile(dirs.meg_path, subj,[subj,'-b_m1-burst.mat']);
-    infname_b_pc = fullfile(dirs.meg_path, subj,[subj,'-b_pc-burst.mat']);
-    infname_u_m2 = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst.mat']);
-    infname_u_m1 = fullfile(dirs.meg_path, subj,[subj,'-u_m1-burst.mat']);
-    infname_u_pc = fullfile(dirs.meg_path, subj,[subj,'-u_pc-burst.mat']);
+    infname_b_m2 = fullfile(dirs.meg_path, subj,[subj,'-b_m2-burst2.mat']);
+    infname_b_m1 = fullfile(dirs.meg_path, subj,[subj,'-b_m1-burst2.mat']);
+    infname_b_pc = fullfile(dirs.meg_path, subj,[subj,'-b_pc-burst2.mat']);
+    infname_u_m2 = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst2.mat']);
+    infname_u_m1 = fullfile(dirs.meg_path, subj,[subj,'-u_m1-burst2.mat']);
+    infname_u_pc = fullfile(dirs.meg_path, subj,[subj,'-u_pc-burst2.mat']);
     
     fprintf('Load data... ')
     load(infname_b_m1)
@@ -191,36 +184,36 @@ fprintf('Save data... ');
 % save(fullfile(dirs.group_path, 'maxeve_data.mat'), 'maxeve', 'hemi','subjs');
 
 % Save N data
-save(fullfile(dirs.group_path, 'neve_b_m1_data.mat'), 'nevent_b_m1','subjects');
-save(fullfile(dirs.group_path, 'neve_b_m2_data.mat'), 'nevent_b_m2','subjects');
-save(fullfile(dirs.group_path, 'neve_b_pc_data.mat'), 'nevent_b_pc','subjects');
-save(fullfile(dirs.group_path, 'neve_u_m1_data.mat'), 'nevent_u_m1','subjects');
-save(fullfile(dirs.group_path, 'neve_u_m2_data.mat'), 'nevent_u_m2','subjects');
-save(fullfile(dirs.group_path, 'neve_u_pc_data.mat'), 'nevent_u_pc','subjects');
+save(fullfile(dirs.group_path, 'neve_b_m1_data2.mat'), 'nevent_b_m1','subjects');
+save(fullfile(dirs.group_path, 'neve_b_m2_data2.mat'), 'nevent_b_m2','subjects');
+save(fullfile(dirs.group_path, 'neve_b_pc_data2.mat'), 'nevent_b_pc','subjects');
+save(fullfile(dirs.group_path, 'neve_u_m1_data2.mat'), 'nevent_u_m1','subjects');
+save(fullfile(dirs.group_path, 'neve_u_m2_data2.mat'), 'nevent_u_m2','subjects');
+save(fullfile(dirs.group_path, 'neve_u_pc_data2.mat'), 'nevent_u_pc','subjects');
 
 % Save length data
-save(fullfile(dirs.group_path, 'leneve_b_m1.mat'), 'len_b_m1','sub_b_m1');
-save(fullfile(dirs.group_path, 'leneve_b_m2.mat'), 'len_b_m2','sub_b_m2');
-save(fullfile(dirs.group_path, 'leneve_b_pc.mat'), 'len_b_pc','sub_b_pc');
-save(fullfile(dirs.group_path, 'leneve_u_m1.mat'), 'len_u_m1','sub_u_m1');
-save(fullfile(dirs.group_path, 'leneve_u_m2.mat'), 'len_u_m2','sub_u_m2');
-save(fullfile(dirs.group_path, 'leneve_u_pc.mat'), 'len_u_pc','sub_u_pc');
+save(fullfile(dirs.group_path, 'leneve_b_m12.mat'), 'len_b_m1','sub_b_m1');
+save(fullfile(dirs.group_path, 'leneve_b_m22.mat'), 'len_b_m2','sub_b_m2');
+save(fullfile(dirs.group_path, 'leneve_b_pc2.mat'), 'len_b_pc','sub_b_pc');
+save(fullfile(dirs.group_path, 'leneve_u_m12.mat'), 'len_u_m1','sub_u_m1');
+save(fullfile(dirs.group_path, 'leneve_u_m22.mat'), 'len_u_m2','sub_u_m2');
+save(fullfile(dirs.group_path, 'leneve_u_pc2.mat'), 'len_u_pc','sub_u_pc');
 
 % Save max data
-save(fullfile(dirs.group_path, 'maxeve_b_m1.mat'), 'max_b_m1','sub_b_m1');
-save(fullfile(dirs.group_path, 'maxeve_b_m2.mat'), 'max_b_m2','sub_b_m2');
-save(fullfile(dirs.group_path, 'maxeve_b_pc.mat'), 'max_b_pc','sub_b_pc');
-save(fullfile(dirs.group_path, 'maxeve_u_m1.mat'), 'max_u_m1','sub_u_m1');
-save(fullfile(dirs.group_path, 'maxeve_u_m2.mat'), 'max_u_m2','sub_u_m2');
-save(fullfile(dirs.group_path, 'maxeve_u_pc.mat'), 'max_u_pc','sub_u_pc');
+save(fullfile(dirs.group_path, 'maxeve_b_m12.mat'), 'max_b_m1','sub_b_m1');
+save(fullfile(dirs.group_path, 'maxeve_b_m22.mat'), 'max_b_m2','sub_b_m2');
+save(fullfile(dirs.group_path, 'maxeve_b_pc2.mat'), 'max_b_pc','sub_b_pc');
+save(fullfile(dirs.group_path, 'maxeve_u_m12.mat'), 'max_u_m1','sub_u_m1');
+save(fullfile(dirs.group_path, 'maxeve_u_m22.mat'), 'max_u_m2','sub_u_m2');
+save(fullfile(dirs.group_path, 'maxeve_u_pc2.mat'), 'max_u_pc','sub_u_pc');
 
 % Save tue data
-save(fullfile(dirs.group_path, 'tueeve_b_m1.mat'), 'tue_b_m1','sub_b_m1');
-save(fullfile(dirs.group_path, 'tueeve_b_m2.mat'), 'tue_b_m2','sub_b_m2');
-save(fullfile(dirs.group_path, 'tueeve_b_pc.mat'), 'tue_b_pc','sub_b_pc');
-save(fullfile(dirs.group_path, 'tueeve_u_m1.mat'), 'tue_u_m1','sub_u_m1');
-save(fullfile(dirs.group_path, 'tueeve_u_m2.mat'), 'tue_u_m2','sub_u_m2');
-save(fullfile(dirs.group_path, 'tueeve_u_pc.mat'), 'tue_u_pc','sub_u_pc');
+save(fullfile(dirs.group_path, 'tueeve_b_m12.mat'), 'tue_b_m1','sub_b_m1');
+save(fullfile(dirs.group_path, 'tueeve_b_m22.mat'), 'tue_b_m2','sub_b_m2');
+save(fullfile(dirs.group_path, 'tueeve_b_pc2.mat'), 'tue_b_pc','sub_b_pc');
+save(fullfile(dirs.group_path, 'tueeve_u_m12.mat'), 'tue_u_m1','sub_u_m1');
+save(fullfile(dirs.group_path, 'tueeve_u_m22.mat'), 'tue_u_m2','sub_u_m2');
+save(fullfile(dirs.group_path, 'tueeve_u_pc2.mat'), 'tue_u_pc','sub_u_pc');
 
 disp('done')
 

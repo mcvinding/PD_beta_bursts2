@@ -8,8 +8,8 @@ library(R.matlab)
 library(xlsx)
 
 # Define paths
-# wrkdir <- "X://PD_longrest//groupanalysis"
-wrkdir <- "C://Users//Mikkel//Documents//PDbb2//groupanalysis"
+wrkdir <- "X://PD_longrest//groupanalysis"
+# wrkdir <- "C://Users//Mikkel//Documents//PDbb2//groupanalysis"
 setwd(wrkdir)
 
 ###########################################################################################
@@ -24,7 +24,7 @@ lh.roi.thick <- subset(roi.thick, hemi=='lh') # Selct only left hemi
 ###########################################################################################
 # %%% IMPORT EVENT LENGTH DATA %%%
 ###########################################################################################
-temp <- readMat("leneve_u_m2.mat")
+temp <- readMat("leneve_u_m22.mat")
 leneve <- temp$len.u.m2
 subj <- as.factor(unlist(temp$sub.u.m2))
 # idxr <- as.factor(1:length(leneve))
@@ -37,7 +37,7 @@ subj <- as.factor(unlist(temp$sub.u.m2))
 ###########################################################################################
 # %%%  IMPORT EVENT POW DATA %%%
 ###########################################################################################
-temp <- readMat("maxeve_u_m2.mat")
+temp <- readMat("maxeve_u_m22.mat")
 maxeve <- temp$max.u.m2
 subj <- as.factor(unlist(temp$sub.u.m2))
 # idxr <- as.factor(1:length(maxeve))
@@ -49,7 +49,7 @@ subj <- as.factor(unlist(temp$sub.u.m2))
 ###########################################################################################
 # %%% IMPORT EVENT INTERVAL DATA %%%
 ###########################################################################################
-temp <- readMat("tueeve_u_m2.mat")
+temp <- readMat("tueeve_u_m22.mat")
 tueeve <- temp$tue.u.m2
 subj <- as.factor(unlist(temp$sub.u.m2))
 # idxr <- as.factor(1:length(maxeve))
@@ -66,15 +66,15 @@ tmp1 <- data.frame(leneve=leneve,
                      tueeve=tueeve,
                      maxeve=maxeve,
                      subj=subj)
-tmp1$leneve.ms <- bbdata$leneve*1000
-tmp1$tueeve.ms <- bbdata$tueeve*1000
+tmp1$leneve.ms <- tmp1$leneve*1000
+tmp1$tueeve.ms <- tmp1$tueeve*1000
 tmp2 <- merge(tmp1, sdata, by="subj", all=FALSE)
 tmp3 <- merge(tmp2, lh.roi.thick, by="subj", all=FALSE)
 clintmp <- clindata[,c(1,9:17)]
 bbdata <- merge(tmp3, clintmp, by="subj", all=TRUE)
 
 # Save
-save(bbdata, file='bbdata.Rdata')
-write.csv(bbdata, file='bbdata.csv')
+save(bbdata, file='bbdata2.Rdata')
+write.csv(bbdata, file='bbdata2.csv')
 
 #END

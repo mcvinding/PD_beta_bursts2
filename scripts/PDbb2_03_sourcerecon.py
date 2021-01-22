@@ -36,11 +36,11 @@ for subj in subjects:
     print('NOW PROCESSING: '+subj)
     
     subj_path   = op.join(meg_path, subj)
-    rawfile     = op.join(subj_path, subj+'-ica-raw.fif')
+    rawfile     = op.join(subj_path, subj+'-ica-raw2.fif')
     covfile     = op.join(subj_path, subj+'-cov.fif') 
     empfile     = op.join(subj_path, subj+'-empt-raw.fif')
     fwdfile     = op.join(subj_path, subj+'-'+spacing+'-fwd.fif')
-    outfname    = op.join(subj_path, subj+'-dspm')                      #NB omit file ending!
+    outfname    = op.join(subj_path, subj+'-dspm2')                      #NB omit file ending!
 
     if op.exists(outfname+'-lh.stc') and not overwrite:
         print('Output '+outfname+' already exists. Will not overwrite!')

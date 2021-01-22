@@ -88,11 +88,11 @@ for subj in subjects:
 
 
     # compute the forward operator, commonly referred to as leadfield matrix
-    fwd = mne.make_forward_solution(raw_fname, 
-                                    trans=trans, 
-                                    src=src, 
-                                    bem=bem, 
-                                    meg=True, eeg=False,     
+    fwd = mne.make_forward_solution(raw_fname,
+                                    trans=trans,
+                                    src=src,
+                                    bem=bem,
+                                    meg=True, eeg=False,
                                     mindist=1.0,
                                     n_jobs=3)
     

@@ -145,7 +145,10 @@ for ii, subj_date in enumerate(subjects_and_dates):
         stopSam = eve[eve[:,2] == 14656,0][0]
     elif subj == '0615':                 # No triggers.
         startSam = raw.first_samp+10000             
-        stopSam = startSam+180102        
+        stopSam = startSam+180102
+    elif subj == '0322':
+        startSam = eve[eve[:,2] == startTrigger,0][0]
+        stopSam = startSam+180102
     else:
         # if not len(eve) == 2:
             # trigger_err += [subj]            

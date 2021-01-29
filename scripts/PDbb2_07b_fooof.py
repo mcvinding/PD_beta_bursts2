@@ -36,7 +36,7 @@ bands = Bands({'delta' : [1, 4],
 # Constrain analysis
 max_n_peaks = 8
 peak_wlim   = [0.75, 12]
-freq_range  = [0.5, 45]
+freq_range  = [1, 45]
               
 #%% Load and collect data
 all_psd = np.zeros((len(subjects), 137))

@@ -19,7 +19,6 @@ check.data <- subset(check.data, rest_ec==1)
 # %%% IMPORT SUBJECT DATA %%%
 ###########################################################################################
 # Get "New" subjects
-# subj_data <- read.xlsx2('C://Users//Mikkel//Documents//PDbb2//groupanalysis//subj_data_anonymised.xlsx', 1)
 subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
 subj_data$age <- as.numeric(as.character(subj_data$Age.))
 subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
@@ -154,7 +153,7 @@ fooof.data$subj <- paste("0",fooof.data$subj, sep="")
 # %%% IMPORT N EVENT DATA %%%
 ###########################################################################################
 # Read N event data
-temp <- readMat("neve_b_m1_data2.mat")
+temp <- readMat("neve_u_m2_data2.mat")
 # hemi <- as.factor(unlist(temp$hemiN))
 # nevent.b.m1 <- temp$nevent.b.m1
 subj <- as.factor(unlist(temp$subjects))
@@ -162,14 +161,10 @@ subj <- as.factor(unlist(temp$subjects))
 # XXX: SORT !!!!
 temp2 <- readMat("neve_b_m2_data2.mat")
 temp3 <- readMat("neve_b_pc_data2.mat")
-temp4 <- readMat("neve_u_m1_data2.mat")
-temp5 <- readMat("neve_u_m2_data2.mat")
 temp6 <- readMat("neve_u_pc_data2.mat")
 
 neve.data <- data.frame(nevent.b.m2=temp2$nevent.b.m2,
-                        nevent.u.m2=temp5$nevent.u.m2,
-                        nevent.u.m1=temp4$nevent.u.m1,
-                        nevent.b.m1=temp$nevent.b.m1,
+                        nevent.u.m2=temp$nevent.u.m2,
                         subj=subj)
 
 # Get BPM
@@ -195,13 +190,27 @@ write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata_all2.csv')
 load(file='X://PD_longrest//groupanalysis//ndata_all2.Rdata')
 
 ###########################################################################################
+# %%% LEDD and disease duration
+###########################################################################################
+tmp <- read.xlsx('X:\\PD_long\\subj_data\\ptns_medication.xlsx', 1)
+tmp$yr1 <- as.numeric(substr(tmp$DATE, start=2, stop=5))
+tmp$yr2 <- as.numeric(tmp$Initial_diagnosis)
+tmp$pd.dur <- tmp$yr1-tmp$yr2
+
+med.dat <- data.frame(subj=paste('0',as.character(tmp$NATID), sep=""),
+                      ledd=tmp$LEDD,
+                      pd.dur=tmp$pd.dur)
+
+###########################################################################################
 # %%% COLLECT ALL DATA INTO ONE %%%
 ###########################################################################################
 tmpdat1 <- merge(ndata, lh.roi.thick, by=c("subj"))
 tmpdat2 <- merge(tmpdat1, fooof.data, by=c("subj"))
-alldata <- merge(tmpdat2, udata, by=c("subj"), all.x=TRUE)
+tmpdat3 <- merge(tmpdat2, med.dat, by=c("subj"))
+alldata <- merge(tmpdat3, udata, by=c("subj"), all.x=TRUE)
 
 save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
+save(alldata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
 write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.csv')
 
 #END

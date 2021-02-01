@@ -13,7 +13,8 @@ setwd(wrkdir)
 
 # Create array to mark rejected subjects
 check.data <- read.xlsx2('X://PD_long//subj_data//subjects_and_dates.xlsx', 1)
-check.data <- subset(check.data, rest_ec==1)
+check.data$id <- as.factor(check.data$i)
+check.data <- subset(check.data, rest_ec=="1")
 
 ###########################################################################################
 # %%% IMPORT SUBJECT DATA %%%
@@ -111,26 +112,17 @@ load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
 ###########################################################################################
 # %%% IMPORT FS ROI STATS %%%
 ###########################################################################################
-roi.lh.thick <- data.frame(subj=sdata$subj,
-                           thick = rep(NaN, length(sdata$subj)),
-                           hemi = rep('lh', length(sdata$subj)))
-                                      
-roi.rh.thick <- data.frame(subj=sdata$subj,
-                           thick = rep(NaN, length(sdata$subj)),
-                           hemi = rep('rh', length(sdata$subj)))
+roi.thick <- data.frame(subj=sdata$subj,
+                        thick = rep(NaN, length(sdata$subj)),
+                        hemi = rep('lh', length(sdata$subj)))
 
 for (ii in 1:length(sdata$subj)){
   subj = sdata$subj[ii]
   tmp.lh <- read_fs_table(paste('X://PD_longrest//meg_data//',subj,'//',subj,'.lh.sensmotor.stats', sep=""), head=FALSE)
-  roi.lh.thick$thick[roi.lh.thick$subj==subj] <- tmp.lh$V5
-  
-  tmp.rh <- read_fs_table(paste('X://PD_longrest//meg_data//',subj,'//',subj,'.rh.sensmotor.stats', sep=""), head=FALSE)
-  roi.rh.thick$thick[roi.rh.thick$subj==subj] <- tmp.rh$V5
-  
-  rm(tmp.lh, tmp.rh)
+  roi.thick$thick[roi.thick$subj==subj] <- tmp.lh$V5
+  rm(tmp.lh)
 }
 
-roi.thick <- rbind(roi.lh.thick, roi.rh.thick)
 roi.thick$hemi <- as.factor(roi.thick$hemi)
 
 # Save
@@ -139,23 +131,19 @@ save(roi.thick, file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 # Reload
 load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
 
-# Selct only left hemi for now!
-lh.roi.thick <- subset(roi.thick, hemi=='lh')
-
 ###########################################################################################
 # %%% IMPORT PSD DATA %%%
 ###########################################################################################
 
 fooof.data <- read.csv('X://PD_longrest//groupanalysis//fooof_df2.csv', sep=";")
-fooof.data$subj <- paste("0",fooof.data$subj, sep="")
+fooof.data$subj <- as.factor(paste("0",fooof.data$subj, sep=""))
 
 ###########################################################################################
 # %%% IMPORT N EVENT DATA %%%
 ###########################################################################################
 # Read N event data
 temp <- readMat("neve_u_m2_data2.mat")
-# hemi <- as.factor(unlist(temp$hemiN))
-# nevent.b.m1 <- temp$nevent.b.m1
+
 subj <- as.factor(unlist(temp$subjects))
 
 # XXX: SORT !!!!
@@ -167,27 +155,21 @@ neve.data <- data.frame(nevent.b.m2=temp2$nevent.b.m2,
                         nevent.u.m2=temp$nevent.u.m2,
                         subj=subj)
 
-# Get BPM
-data.log <- read.csv('X:\\PD_longrest\\groupanalysis\\data_log.csv')
+# Get data log and BPM
+data.log <- read.csv('X:\\PD_longrest\\groupanalysis\\data_log.csv', sep=";")
 data.log$subj <- as.factor(data.log$subj)
 data.log$subj <- paste("0",data.log$subj, sep="")
 
 neve.data <- merge(neve.data, data.log, by="subj", all=FALSE)
 neve.data$data_length.min <- neve.data$data_length/60
-neve.data$nevent.b.m1.min <- round(neve.data$nevent.b.m1/neve.data$data_length.min)
 neve.data$nevent.b.m2.min <- round(neve.data$nevent.b.m2/neve.data$data_length.min)
-neve.data$nevent.u.m1.min <- round(neve.data$nevent.u.m1/neve.data$data_length.min)
 neve.data$nevent.u.m2.min <- round(neve.data$nevent.u.m2/neve.data$data_length.min)
 
-# Merge data frames
-ndata <- merge(neve.data, sdata, by="subj", all=FALSE)
-
 # Save
-save(ndata, file='X://PD_longrest//groupanalysis//ndata_all2.Rdata')
-write.csv(ndata, file='X://PD_longrest//groupanalysis//ndata_all2.csv')
+save(ndata, file='X://PD_longrest//groupanalysis//neve.data.Rdata')
 
 # (re)load
-load(file='X://PD_longrest//groupanalysis//ndata_all2.Rdata')
+load(file='X://PD_longrest//groupanalysis//neve.data.Rdata')
 
 ###########################################################################################
 # %%% LEDD and disease duration
@@ -197,17 +179,28 @@ tmp$yr1 <- as.numeric(substr(tmp$DATE, start=2, stop=5))
 tmp$yr2 <- as.numeric(tmp$Initial_diagnosis)
 tmp$pd.dur <- tmp$yr1-tmp$yr2
 
-med.dat <- data.frame(subj=paste('0',as.character(tmp$NATID), sep=""),
-                      ledd=tmp$LEDD,
-                      pd.dur=tmp$pd.dur)
+tmp1.dat <- data.frame(subj=as.factor(paste('0',as.character(tmp$NATID), sep="")),
+                       ledd=tmp$LEDD,
+                       pd.dur=tmp$pd.dur)
+
+load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
+
+tmp2.dat <- data.frame(subj=as.factor(paste('0',as.character(alldata$MEG_ID), sep="")),
+                       ledd=alldata$LEDD,
+                       pd.dur=alldata$disease_dur)
+
+med.dat <- rbind(tmp1.dat, tmp2.dat)
 
 ###########################################################################################
 # %%% COLLECT ALL DATA INTO ONE %%%
 ###########################################################################################
-tmpdat1 <- merge(ndata, lh.roi.thick, by=c("subj"))
-tmpdat2 <- merge(tmpdat1, fooof.data, by=c("subj"))
-tmpdat3 <- merge(tmpdat2, med.dat, by=c("subj"))
+# Merge data frames
+ndata <- merge(neve.data, sdata, by="subj", all=TRUE)
+tmpdat1 <- merge(ndata, roi.thick, by=c("subj"), all=TRUE)
+tmpdat2 <- merge(tmpdat1, fooof.data, by=c("subj"), all=TRUE)
+tmpdat3 <- merge(tmpdat2, med.dat, by=c("subj"), all=TRUE)
 alldata <- merge(tmpdat3, udata, by=c("subj"), all.x=TRUE)
+alldata <- subset(alldata, alldata$subj %in% check.data$id)
 
 save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 save(alldata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')

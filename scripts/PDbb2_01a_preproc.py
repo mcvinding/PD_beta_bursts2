@@ -122,21 +122,12 @@ for ii, subj_date in enumerate(subjects_and_dates):
     if subj == '0333':                    # Missing triggers
         startSam = 20000+raw.first_samp
         stopSam = 180102+startSam       
-    elif subj == '0523':
+    elif subj in ['0322','0523','0524','0525','0529']:
         startSam = eve[eve[:,2] == startTrigger,0][0]
-        stopSam = startSam+180102
-    elif subj == '0524':
-        startSam = eve[eve[:,2] == startTrigger,0][0]
-        stopSam = startSam+180102        
-    elif subj == '0529':                 # Missing stop trigger
-        startSam = eve[eve[:,2] == startTrigger,0][0]
-        stopSam = 180102+startSam    
-    elif subj == '0548':                 # No start trigger. Start trigger val is stop trigger.
+        stopSam = startSam+180102     
+    elif subj in ['0548','0583']:                 # No start trigger. Start trigger val is stop trigger.
         stopSam = eve[eve[:,2] == startTrigger,0][0]
-        startSam = stopSam-180102               
-    elif subj == '0583':                 # No start trigger. Start trigger val is stop trigger.
-        stopSam = eve[eve[:,2] == startTrigger,0][0]
-        startSam = stopSam-180102                       
+        startSam = stopSam-180102                                     
     elif subj == '0590':                 # No start trigger.
         startSam = raw.first_samp+1000             
         stopSam = startSam+180102
@@ -145,9 +136,6 @@ for ii, subj_date in enumerate(subjects_and_dates):
         stopSam = eve[eve[:,2] == 14656,0][0]
     elif subj == '0615':                 # No triggers.
         startSam = raw.first_samp+10000             
-        stopSam = startSam+180102
-    elif subj == '0322':
-        startSam = eve[eve[:,2] == startTrigger,0][0]
         stopSam = startSam+180102
     else:
         # if not len(eve) == 2:

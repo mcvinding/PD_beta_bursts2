@@ -8,7 +8,7 @@ addpath('/home/mikkel/PD_longrest/scripts/')
 [subjects, dirs] = PDbb2_SETUP();
 
 %% Settings
-overwrite = 1;   % Overwirte old files 0=false or 1=true
+overwrite = 0;   % Overwirte old files 0=false or 1=true
 
 fsample = 1000;
 labels  = {'lh_roi'};

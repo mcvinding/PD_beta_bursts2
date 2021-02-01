@@ -26,7 +26,7 @@ for subj in subjects:
     # Input
     trans_fname     = op.join(sub_megdir, subj+'-trans.fif')
     bem_surf_fname  = op.join(sub_mridir, 'bem', 'inner_skull.surf')
-    raw_fname       = op.join(sub_megdir, subj+'-ica-raw.fif')
+    raw_fname       = op.join(sub_megdir, subj+'-ica-raw2.fif')
     
     # output
     bem_sol_fname   = op.join(sub_megdir, subj+'-bem-sol.fif')

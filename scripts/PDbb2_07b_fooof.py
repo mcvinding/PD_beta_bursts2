@@ -28,8 +28,8 @@ from fooof.plts.aperiodic import plot_aperiodic_params, plot_aperiodic_fits
 #%% SETTINGS
 # Define frequency bands of interest
 bands = Bands({'delta' : [1, 4],
-               'theta' : [4, 8],
-               'alpha' : [8, 13],
+               'theta' : [4, 7],
+               'alpha' : [7, 13],
                'beta'  : [13, 30],
                'gamma' : [30, 45]})
 

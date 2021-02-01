@@ -6,19 +6,19 @@ Get transformation MRI <-> MEG with MNE coregistration
 import mne
 import sys
 import os.path as op
-sys.path.append('X:\PD_longrest\scripts')
-from PDbb2_SETUP import meg_path, fs_subjects_dir, subjects
+sys.path.append('/home/mikkel/PD_longrest/scripts/')
+from PDbb2_SETUP import meg_path, fs_subjects_dir
 
 #%% Coregistration
 # Make sure to give consistent naming when saving -trans files, e.g. "0523-trans.fif"
 
 # Specify subject id
-subj = '0649'
+subj = '0525'
 
 #%% Do coregistration
 print('------------------ Sub: '+subj+' ------------------')
 if sys.platform == 'linux':
-    inst = op.join(meg_path, subj, subj+'-ica-raw.fif')
+    inst = op.join(meg_path, subj, subj+'-ica-raw2.fif')
 else:
     inst = 'X:/PD_longrest/meg_data/'+subj+'/'+subj+'-ica-raw.fif'
     

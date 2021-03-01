@@ -202,6 +202,9 @@ tmpdat3 <- merge(tmpdat2, med.dat, by=c("subj"), all=TRUE)
 alldata <- merge(tmpdat3, udata, by=c("subj"), all.x=TRUE)
 alldata <- subset(alldata, alldata$subj %in% check.data$id)
 
+alldata$age.centerd <- alldata$age-mean(alldata$age)
+alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
+
 save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 save(alldata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
 write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.csv')

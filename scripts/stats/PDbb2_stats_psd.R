@@ -1,11 +1,12 @@
 # PD beta burst statistics: analsyis of PSD output from FOOOF analysis
 library(ggplot2)
+library(arm)
 
 # Load data
-load(file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
-load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
-alldata$age.centerd <- alldata$age-mean(alldata$age)
-alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
+load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
+# load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
+# alldata$age.centerd <- alldata$age-mean(alldata$age)
+# alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
 
 # Inspect
 ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=alldata)+
@@ -34,276 +35,246 @@ ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=alldata)+
 
 ######################################################################################
 # 1/f intercept
-tstmod.a <- glm(a_intercept ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+finter.Full3 <- glm(a_intercept ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata)
+anova(finter.AST, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
 
-# Plot winning model
-new.dat <- alldata
-new.dat$pred <- predict(tstmod2.8, re.form=NA)
-ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=new.dat)+
-  geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
+d.AD <- data.frame(counts=c(18,17,15,20,10,20,25,13,12),
+                   outcome=gl(3,1,9),
+                   treatment=gl(3,3))
+glm1 <- glm(counts ~ outcome + treatment, family = gaussian(), data=d.AD)
+glm0 <- update(glm1, . ~ 1)
 
-# No square term
-tstmod.8 <- glm(a_intercept ~ age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod.7 <- update(tstmod.8, ~. -group:sex:age.centerd)
-tstmod.6 <- update(tstmod.7, ~. -sex:age.centerd)
-tstmod.5 <- update(tstmod.6, ~. -group:sex)
-tstmod.4 <- update(tstmod.5, ~. -group:age.centerd)
-tstmod.3 <- update(tstmod.4, ~. -sex)
-tstmod.2 <- update(tstmod.3, ~. -age.centerd)
-tstmod.1 <- update(tstmod.2, ~. -group)
+anova(glm0,glm1, test="F")
 
-anova(tstmod.1,tstmod.2,tstmod.3,tstmod.4,tstmod.5,tstmod.6,tstmod.7,tstmod.8, test="Chisq")
+
+finter.AST <- update(finter.Full3, ~. -age.centerd:sex:thick.centerd)
+finter.GST <- update(finter.AST, ~. -group:sex:thick.centerd)
+finter.GAT <- update(finter.GST, ~. -group:age.centerd:thick.centerd)
+finter.GSA <- update(finter.GAT, ~. -group:sex:age.centerd)
+finter.ST  <- update(finter.GSA, ~. -sex:thick.centerd)
+finter.AT  <- update(finter.ST, ~. -age.centerd:thick.centerd)
+finter.SA  <- update(finter.AT, ~. -sex:age.centerd)
+finter.GT  <- update(finter.SA, ~. -group:thick.centerd)
+finter.GS  <- update(finter.GT, ~. -group:sex)
+finter.GA  <- update(finter.GS, ~. -group:age.centerd)
+finter.T   <- update(finter.GA, ~. -thick.centerd)
+finter.S   <- update(finter.T, ~. -sex)
+finter.A   <- update(finter.S, ~. -age.centerd)
+finter.G   <- update(finter.A, ~. -group)
+
+anova(finter.G,
+      finter.A,
+      finter.S,
+      finter.T,
+      finter.GA,
+      finter.GS,
+      finter.GT,
+      finter.SA,
+      finter.AT,
+      finter.ST,
+      finter.GSA,
+      finter.GAT,
+      finter.GST,
+      finter.AST, 
+      finter.Full3, test="F")
+
+lrtest(finter.G,
+       finter.A,
+       finter.S,
+       finter.T,
+       finter.GA,
+       finter.GS,
+       finter.GT,
+       finter.SA,
+       finter.AT,
+       finter.ST,
+       finter.GSA,
+       finter.GAT,
+       finter.GST,
+       finter.AST, 
+       finter.Full3)
+
+# Model summary
+set.seed(1)
+inter.sim <- sim(inter.Full3, n.sims=1000)
+x1 <- summary(inter.Full3)$coefficients
+x2 <- t(apply(coef(inter.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
+
+# Group: female
+(((x1[1]-x1[2])/x1[1]))*100
+quantile((((coef(inter.sim)[,1]-coef(inter.sim)[,2])/coef(inter.sim)[,1])-1)*100, c(0.025, 0.975))
+
+# Group: male
+(((x1[1]-x1[2]-x1[3]-x1[7])/x1[1])-1)*100
+quantile((((coef(inter.sim)[,1]-coef(inter.sim)[,2]-coef(inter.sim)[,3]-coef(inter.sim)[,7])/coef(inter.sim)[,1])-1)*100, c(0.025, 0.975))
 
 # Plot top model
-new.dat <- alldata
-new.dat$pred <- predict(tstmod.8, re.form=NA)
-ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=new.dat)+
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(tstmod.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=alldata)+
   geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)+
+  theme_classic()
+
+
+# NOT WORKING!!!
+plot_ly(x=alldata$age, z=alldata$a_intercept, y=alldata$thick, type="scatter3d", mode="markers", color=alldata$group)
 
 ######################################################################################
 # 1/f slope
-tstmod.a <- glm(a_slope ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+fslope.Full3 <- glm(a_slope ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata, family=gaussian)
+anova(tstmod.Full3, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
+# Model summary
+mod.sim <- sim(tstmod.Full3, n.sims=1000)
+x1 <- summary(tstmod.Full3)$coefficients
+x2 <- t(apply(coef(mod.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
 
-# Plot winning model
-new.dat <- alldata
-new.dat$pred <- predict(tstmod2.8, re.form=NA)
-ggplot(aes(x=age, y=a_slope, color=group, shape=sex), data=new.dat)+
+# Group
+((x1[2]/x1[1]))*100
+quantile(((coef(mod.sim)[,2]/coef(mod.sim)[,1]))*100, c(0.025, 0.975))
+
+# Thickness
+((x1[5]/x1[1]))*100
+quantile(((coef(mod.sim)[,5]/coef(mod.sim)[,1]))*100, c(0.025, 0.975))
+
+# Plot top model
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(tstmod.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=a_slope, color=group, shape=sex), data=alldata)+
   geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
+
+plot_ly(x=alldata$age, z=alldata$a_slope, y=alldata$thick, type="scatter3d", mode="markers", color=alldata$group, symbol=alldata$sex)
+
 
 ######################################################################################
 # Beta power
-tstmod.a <- glm(log(beta_pw) ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+beta_pw.Full3 <- glm(beta_pw ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata, family=gaussian)
+anova(tstmod.Full3, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
+# Model summary
+beta_pw.sim <- sim(beta_pw.Full3, n.sims=1000)
+x1 <- summary(beta_pw.Full3)$coefficients
+x2 <- t(apply(coef(beta_pw.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
 
-# Plot winning model
-new.dat <- alldata
-new.dat$pred <- exp(predict(tstmod2.8, re.form=NA))
-ggplot(aes(x=age, y=beta_pw, color=group, shape=sex), data=new.dat)+
+((x1[2]/x1[1]))*100
+quantile(((coef(beta_pw.sim)[,2]/coef(beta_pw.sim)[,1]))*100, c(0.025, 0.975))
+
+((x1[3]/x1[1]))*100
+quantile(((coef(beta_pw.sim)[,3]/coef(beta_pw.sim)[,1]))*100, c(0.025, 0.975))
+
+# Plot top model
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(beta_pw.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=beta_pw, color=group, shape=sex), data=alldata)+
   geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
 
 ######################################################################################
 # Beta peak freq
-tstmod.a <- glm(beta_cf ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+beta_cf.Full3 <- glm(beta_cf ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata, family=gaussian)
+anova(beta_cf.Full3, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
+# Model summary
+beta_cf.sim <- sim(beta_cf.Full3, n.sims=1000)
+x1 <- summary(beta_cf.Full3)$coefficients
+x2 <- t(apply(coef(beta_cf.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
+
+# Plot top model
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(beta_cf.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=beta_cf, color=group, shape=sex), data=alldata)+
+  geom_point()+
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
 
 ######################################################################################
 # Alpha power
-tstmod.a <- glm(log(alpha_pw) ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+alpha_pw.Full3 <- glm(alpha_pw ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata, family=gaussian)
+anova(alpha_pw.Full3, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
+# Model summary
+alpha_pw.sim <- sim(alpha_pw.Full3, n.sims=1000)
+x1 <- summary(alpha_pw.Full3)$coefficients
+x2 <- t(apply(coef(alpha_pw.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
 
-# Plot winning model
-new.dat <- alldata[!is.na(alldata$alpha_bw),]
-new.dat$pred <- exp(predict(tstmod2.8, re.form=NA))
-ggplot(aes(x=age, y=alpha_pw, color=group, shape=sex), data=new.dat)+
+# Plot top model
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(alpha_pw.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=alpha_pw, color=group, shape=sex), data=alldata)+
   geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
-
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
 
 ######################################################################################
 # Alpha peak freq
-tstmod.a <- glm(alpha_cf ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
+alpha_cf.Full3 <- glm(alpha_cf ~ (group+age.centerd+sex+thick.centerd)^3, data=alldata, family=gaussian)
+anova(alpha_cf.Full3, test="Chisq")
 
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
+# Model summary
+alpha_cf.sim <- sim(alpha_cf.Full3, n.sims=1000)
+x1 <- summary(alpha_cf.Full3)$coefficients
+x2 <- t(apply(coef(alpha_cf.sim), 2, quantile, c(0.025, 0.975)))
+cbind(x1[,1], x2)
 
-new.dat <- alldata[!is.na(alldata$alpha_bw),]
-new.dat$pred <- predict(tstmod2.5, re.form=NA)
-ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=new.dat)+
+# Plot top model
+agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
+agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
+
+new.dat <- data.frame(age.centerd=rep(agespan,4), 
+                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
+                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
+                      thick.centerd=mean(alldata$thick.centerd),
+                      age=rep(agespan2, 4))
+
+new.dat$pred <- predict(alpha_cf.Full3, new.dat, re.form=NA)
+ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=alldata)+
   geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1)
+  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
 
-
-######################################################################################
-# ~ Thickness
-######################################################################################
-
-######################################################################################
-# 1/f intercept
-tstmod.a <- glm(a_intercept ~ I(thick.centerd^2)*sex*group+thick.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(thick.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(thick.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(thick.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:thick.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:thick.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:thick.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(thick.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -thick.centerd)
-
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-######################################################################################
-# 1/f slope
-tstmod.a <- glm(a_slope ~ I(thick.centerd^2)*sex*group+thick.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(thick.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(thick.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(thick.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:thick.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:thick.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:thick.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(thick.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -thick.centerd)
-
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-######################################################################################
-# Beta power
-tstmod.a <- glm(log(beta_pw) ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
-
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-######################################################################################
-# Beta peak freq
-tstmod.a <- glm(beta_cf ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
-
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-######################################################################################
-# Alpha power
-tstmod.a <- glm(log(alpha_pw) ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
-
-anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-      test="Chisq")
-
-######################################################################################
-# Alpha peak freq
-tstmod.a <- glm(alpha_cf ~ I(age.centerd^2)*sex*group+age.centerd*sex*group, data=alldata, family=gaussian)
-tstmod2.1 <- update(tstmod.a, ~. -group:sex:I(age.centerd^2))
-tstmod2.2 <- update(tstmod2.1, ~. -sex:I(age.centerd^2))
-tstmod2.3 <- update(tstmod2.2, ~. -group:I(age.centerd^2))
-tstmod2.4 <- update(tstmod2.3, ~. -group:sex:age.centerd)
-tstmod2.5 <- update(tstmod2.4, ~. -sex:age.centerd)
-tstmod2.6 <- update(tstmod2.5, ~. -group:age.centerd)
-tstmod2.7 <- update(tstmod2.6, ~. -group:sex)
-tstmod2.8 <- update(tstmod2.7, ~. -sex)
-tstmod2.9 <- update(tstmod2.8, ~. -group)
-tstmod2.10 <- update(tstmod2.9, ~. -I(age.centerd^2))
-tstmod2.11 <- update(tstmod2.10, ~. -age.centerd)
-
-t <- anova(tstmod2.11,tstmod2.10,tstmod2.9,tstmod2.8,tstmod2.7,tstmod2.6,tstmod2.5,tstmod2.4,tstmod2.3,tstmod2.2,tstmod2.1,tstmod.a,
-           test="Chisq")
 #END

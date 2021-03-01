@@ -1,13 +1,14 @@
-# PD beta burst data summary
+# Demographics and data summaries
 library(read)
 library(dplyr)
+library(xlsx)
 
 ########################################################################
 # Get summary of all subjects
 ########################################################################
 # Load data
 subj.data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx',1)
-subj.data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
+subj.data$subj <- as.factor(paste("0", subj.data$Study_id, sep=""))
 
 check.data <- read.xlsx2('X://PD_long//subj_data//subjects_and_dates.xlsx', 1)
 alldat <- merge(subj.data, check.data, by.x="subj", by.y="id")

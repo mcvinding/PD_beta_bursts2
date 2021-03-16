@@ -6,6 +6,7 @@
 library(R.matlab)
 library(xlsx)
 library(freesurfer)
+source('X://PD_longrest//scripts//functions//zscore.R')
 
 # Define paths
 wrkdir <- "X://PD_longrest//groupanalysis"
@@ -204,6 +205,7 @@ alldata <- subset(alldata, alldata$subj %in% check.data$id)
 
 alldata$age.centerd <- alldata$age-mean(alldata$age)
 alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
+alldata$thickz <- zscore(alldata$thick)
 
 save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 save(alldata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')

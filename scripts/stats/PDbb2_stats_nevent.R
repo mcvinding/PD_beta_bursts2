@@ -1,5 +1,4 @@
 # PD beta burst statistics: analysis of N events
-### CLEAN UP!!!! ###
 library(lme4)
 library(arm)
 library(ggplot2)
@@ -10,11 +9,6 @@ source('X://PD_longrest//scripts//functions//zscore.R')
 setwd('X://PD_longrest//groupanalysis//')
 load('X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 # load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
-
-# ## Center and standardize variables
-# alldata$age.centerd <- alldata$age-mean(alldata$age)
-# alldata$ageZ <- zscore(alldata$age)
-# alldata$thickZ <- zscore(alldata$thick)
 
 # Inspect hist
 ggplot( aes(x=nevent.u.m2.min, fill=group), data=alldata) +
@@ -70,37 +64,7 @@ c(exp(+x1[5]+x1[11])*100-100,
 c(exp(x1[3]+x1[5]+x1[10])*100-100,
   quantile(exp(cf[,3]+cf[,5]+cf[,10])*100-100, c(0.025, 0.975)))
 
-
-## Plot scatterplot amd model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thickZ=0,
-                      age=rep(agespan2, 4))
-
-new.dat$pred  <- exp(predict(mod.neve.Full3, new.dat, re.form=NA))
-ggplot(aes(x=age, y=nevent.u.m2.min, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
-
-
-
-thickspan <- seq(min(alldata$thickZ),max(alldata$thickZ), 0.01)
-thickspan2 <- seq(min(alldata$thick),max(alldata$thick), length.out = length(thickspan))
-
-new.dat <- data.frame(thickZ=rep(thickspan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(thickspan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(thickspan)), 2)),
-                      age.centerd=0,
-                      thick=rep(thickspan2, 4))
-
-new.dat$pred <- exp(predict(mod.neve.Full3, new.dat, re.form=NA))
-
-ggplot(aes(x=thickZ, y=nevent.u.m2.min, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1, data=new.dat)
+## Save
+save(mod.neve.Full3, file='mod_neve.RData')
 
 #END

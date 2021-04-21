@@ -7,16 +7,13 @@ source('X://PD_longrest//scripts//functions//zscore.R')
 ## Load data
 load(file='X://PD_longrest//groupanalysis//bbdata2.Rdata')
 load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
-# load(file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//bbdata2.Rdata')
+outdir <- 'X://PD_longrest//output'
 
 bbdata$age.centerd <- bbdata$age-mean(bbdata$age)
 bbdata$log.len <- log(bbdata$leneve)
 bbdata$log.tue <- log(bbdata$tueeve)
 bbdata$log.max <- log(bbdata$maxeve)
-bbdata$thick.centerd <- bbdata$thick-mean(bbdata$thick)
 bbdata$thickz <- zscore(bbdata$thick)
-bbdata$lenz <- zscore(bbdata$leneve)
-
 
 ######################################################################################
 ## EVENT LENGTH
@@ -77,22 +74,6 @@ c(exp(x1[4])*100-100,
 c(exp(x1[3]+x1[5]+x1[10])*100-100,
   quantile(exp(cf[,3]+cf[,5]+cf[,10])*100-100, c(0.025, 0.975)))
 
-# Plot top model
-bbsum <- aggregate(cbind(leneve, tueeve, maxeve)~subj, data=bbdata, FUN=median)
-alldata <- merge(alldata, bbsum, by="subj")
-agespan <- seq(min(bbdata$age.centerd),max(bbdata$age.centerd), 0.1)
-agespan2 <- seq(min(bbdata$age),max(bbdata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4),
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thickz=0,
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- exp(predict(lenmod, new.dat, re.form=NA))
-ggplot(aes(x=age, y=leneve, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
 
 ######################################################################################
 ## TIME UNTIL EVENT
@@ -137,33 +118,6 @@ c(exp(x1[3])*100-100,
 # Sex x age: male
 c(exp(x1[3]+x1[9])*100-100,
   quantile(exp(cf[,3]+cf[,9])*100-100, c(0.025, 0.975)))
-
-# Plot
-bbsum <- aggregate(cbind(leneve, tueeve, maxeve)~subj, data=bbdata, FUN=median)
-alldata <- merge(alldata, bbsum, by="subj")
-agespan <- seq(min(bbdata$age.centerd),max(bbdata$age.centerd), 0.1)
-agespan2 <- seq(min(bbdata$age),max(bbdata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4),
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thickz=0,
-                      age=rep(agespan2, 4))
-
-tmpdat <- bbdata
-tmpdat$tuepred.fx <- exp(predict(tuemod, re.form=NA))
-tmpdat$tuepred.rx <- exp(predict(tuemod))
-
-new.dat$pred <- exp(predict(tuemod, new.dat, re.form=NA))
-ggplot(aes(x=age, y=tueeve, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
-
-
-ggplot(aes(x=age, y=tuepred.rx, color=group, shape=sex), data=tmpdat)+
-  geom_point()+
-  geom_line(aes(y = pred, linetype=sex), size = 1, data=new.dat)
-
 
 ######################################################################################
 ## MAX
@@ -213,17 +167,10 @@ c(exp(x1[4])*100-100,
 c(exp(x1[4]+x1[7])*100-100,
   quantile(exp(cf[,4]+cf[,7])*100-100, c(0.025, 0.975)))
 
-#Plots
-tmpdat$maxpred.fx <- exp(predict(maxmod, re.form=NA))
-tmpdat$maxpred.rx <- exp(predict(maxmod))
-ggplot(aes(x=age, y=maxpred.rx, color=group, shape=sex), data=tmpdat)+
-  geom_point()+
-  geom_line(aes(y = maxpred.fx, linetype=sex), size = 1)
-
-
-new.dat$pred <- exp(predict(maxmod, new.dat, re.form=NA))
-ggplot(aes(x=age, y=maxeve, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
+### Save models
+setwd(outdir)
+save(lenmod, file='lenmod.RData')
+save(tuemod, file='tuemod.RData')
+save(maxmod, file='maxmod.RData')
 
 #END

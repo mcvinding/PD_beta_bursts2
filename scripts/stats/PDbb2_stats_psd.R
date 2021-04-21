@@ -5,10 +5,7 @@ library(lmtest)
 
 # Load data
 load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
-# load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj.Rdata')
-# alldata$age.centerd <- alldata$age-mean(alldata$age)
-# alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
-alldata$a_interceptz <- zscore(alldata$a_intercept)
+outdir <- 'X://PD_longrest//output'
 
 # Inspect
 ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=alldata)+
@@ -37,7 +34,7 @@ ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=alldata)+
 
 ######################################################################################
 # 1/f intercept
-finter.Full3 <- glm(a_intercept ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+finter.Full3 <- lm(a_intercept ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(finter.Full3))
 qqline(resid(finter.Full3))
@@ -103,27 +100,9 @@ c(((x1[4]+x1[7])/abs((x1[1]+x1[2])))*100,
 c((x1[4]/abs(x1[1]))*100,
   quantile(((coef(inter.sim)[,4]/abs(coef(inter.sim)[,1])))*100, c(0.025, 0.975)))
 
-
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thickz=0,
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(finter.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)+
-  theme_classic()
-
-
 ######################################################################################
 # 1/f slope
-fslope.Full3 <- glm(a_slope ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=gaussian)
+fslope.Full3 <- lm(a_slope ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(fslope.Full3))
 qqline(resid(fslope.Full3))
@@ -163,7 +142,7 @@ lrtest(fslope.G,
 mod.sim <- sim(fslope.Full3, n.sims=1000)
 x1 <- coef(fslope.Full3)
 x2 <- t(apply(coef(mod.sim), 2, quantile, c(0.025, 0.975)))
-cbind(x1, x2)
+round(cbind(x1, x2), digits=3)
 
 # Group
 c((x1[2]/x1[1])*100,
@@ -173,27 +152,9 @@ c((x1[2]/x1[1])*100,
 c(((x1[5]/x1[1]))*100,
   quantile(((coef(mod.sim)[,5]/coef(mod.sim)[,1]))*100, c(0.025, 0.975)))
 
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thick.centerd=mean(alldata$thick.centerd),
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(tstmod.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=a_slope, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
-
-plot_ly(x=alldata$age, z=alldata$a_slope, y=alldata$thick, type="scatter3d", mode="markers", color=alldata$group, symbol=alldata$sex)
-
-
 ######################################################################################
 # Beta power
-beta_pw.Full3 <- glm(beta_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=gaussian)
+beta_pw.Full3 <- lm(beta_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(beta_pw.Full3))
 qqline(resid(beta_pw.Full3))
@@ -233,7 +194,7 @@ lrtest(beta_pw.G,
 beta_pw.sim <- sim(beta_pw.Full3, n.sims=1000)
 x1 <- coef(beta_pw.Full3)
 x2 <- t(apply(coef(beta_pw.sim), 2, quantile, c(0.025, 0.975)))
-cbind(x1, x2)
+round(cbind(x1, x2), digits=3)
 
 c(((x1[2]/x1[1]))*100,
   quantile(((coef(beta_pw.sim)[,2]/coef(beta_pw.sim)[,1]))*100, c(0.025, 0.975)))
@@ -242,24 +203,9 @@ c(((x1[2]/x1[1]))*100,
 quantile(((coef(beta_pw.sim)[,3]/coef(beta_pw.sim)[,1]))*100, c(0.025, 0.975))
 
 
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thick.centerd=mean(alldata$thick.centerd),
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(beta_pw.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=beta_pw, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
-
 ######################################################################################
 # Beta peak freq
-beta_cf.Full3 <- glm(beta_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=gaussian)
+beta_cf.Full3 <- lm(beta_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(beta_cf.Full3))
 qqline(resid(beta_cf.Full3))
@@ -297,28 +243,13 @@ lrtest(beta_cf.G,
 
 # Model summary
 beta_cf.sim <- sim(beta_cf.Full3, n.sims=1000)
-x1 <- summary(beta_cf.Full3)$coefficients
+x1 <- coef(beta_cf.Full3)
 x2 <- t(apply(coef(beta_cf.sim), 2, quantile, c(0.025, 0.975)))
-cbind(x1[,1], x2)
-
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thick.centerd=mean(alldata$thick.centerd),
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(beta_cf.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=beta_cf, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
+round(cbind(x1, x2), digits=3)
 
 ######################################################################################
 # Alpha power
-alpha_pw.Full3 <- glm(alpha_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=gaussian)
+alpha_pw.Full3 <- lm(alpha_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(alpha_pw.Full3))
 qqline(resid(alpha_pw.Full3))
@@ -356,28 +287,13 @@ lrtest(alpha_pw.G,
 
 # Model summary
 alpha_pw.sim <- sim(alpha_pw.Full3, n.sims=1000)
-x1 <- summary(alpha_pw.Full3)$coefficients
+x1 <- coef(alpha_pw.Full3)
 x2 <- t(apply(coef(alpha_pw.sim), 2, quantile, c(0.025, 0.975)))
-cbind(x1[,1], x2)
-
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thick.centerd=mean(alldata$thick.centerd),
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(alpha_pw.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=alpha_pw, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
+round(cbind(x1, x2), digits=3)
 
 ######################################################################################
 # Alpha peak freq
-alpha_cf.Full3 <- glm(alpha_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=gaussian)
+alpha_cf.Full3 <- lm(alpha_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata)
 
 qqnorm(resid(alpha_cf.Full3))
 qqline(resid(alpha_cf.Full3))
@@ -417,7 +333,7 @@ lrtest(alpha_cf.G,
 alpha_cf.sim <- sim(alpha_cf.Full3, n.sims=1000)
 x1 <- coef(alpha_cf.Full3)
 x2 <- t(apply(coef(alpha_cf.sim), 2, quantile, c(0.025, 0.975)))
-cbind(x1, x2)
+round(cbind(x1, x2), digits=3)
 
 # age: ctrl
 c(x1[3],
@@ -435,20 +351,13 @@ c(x1[5],
 c(x1[5]+x1[8],
   quantile(coef(alpha_cf.sim)[,5]+coef(alpha_cf.sim)[,8], c(0.025, 0.975)))
 
-
-# Plot top model
-agespan <- seq(min(alldata$age.centerd),max(alldata$age.centerd), 0.1)
-agespan2 <- seq(min(alldata$age),max(alldata$age), 0.1)
-
-new.dat <- data.frame(age.centerd=rep(agespan,4), 
-                      group=as.factor(rep(c("patient","control"),each=length(agespan)*2)), 
-                      sex=as.factor(rep(rep(c("M","F"), each=length(agespan)), 2)),
-                      thickz=0,
-                      age=rep(agespan2, 4))
-
-new.dat$pred <- predict(alpha_cf.Full3, new.dat, re.form=NA)
-ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=alldata)+
-  geom_point()+
-  geom_line(aes(y=pred, linetype=sex), size = 1, data=new.dat)
+## Save models
+setwd(outdir)
+save(finter.Full3, file='mod_finter.RData')
+save(fslope.Full3, file='mod_fslope.RData')
+save(beta_pw.Full3, file='mod_betapw.RData')
+save(beta_cf.Full3, file='mod_betacf.RData')
+save(alpha_pw.Full3, file='mod_alphapw.RData')
+save(alpha_cf.Full3, file='mod_alphacf.RData')
 
 #END

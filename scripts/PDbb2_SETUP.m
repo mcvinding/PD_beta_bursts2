@@ -25,7 +25,7 @@ function [subjects, dirs, subj_date] = PDbb2_SETUP()
 
     subjects = subj_names(idxer);
 
-    % Arrange subject and adate folders
+    % Arrange subject and date folders
     dd = (table2cell(subj_dat(:,3)));
     for ss = 1:length(dd)
         subject_date{ss} = fullfile(subj_names{ss}, num2str(dd{ss}));

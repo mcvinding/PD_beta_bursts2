@@ -84,7 +84,6 @@ plot_peak_params(alpha, freq_range=bands.alpha)
 plot_peak_params(beta, freq_range=bands.beta)
 plot_aperiodic_params(aper)
 
-
 #%% Export
 df_dct = {'subj':subjects,
       'a_intercept': aper[:,0],
@@ -109,5 +108,9 @@ df = pandas.DataFrame(df_dct)
 
 # save to csv    
 df.to_csv('/home/mikkel/PD_longrest/groupanalysis/fooof_df2.csv', index=False, sep=';')
+
+#%% Plot example
+fm.report(all_freqs[0], all_psd[1])
+plt.savefig('/home/mikkel/PD_longrest/figures/psd_example.jpg', dpi=600)
 
 #END

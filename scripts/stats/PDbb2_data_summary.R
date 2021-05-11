@@ -98,6 +98,14 @@ range(alldata$data_length)
 mean(alldata$data_length)
 median(alldata$data_length)
 sd(alldata$data_length)
-t.test(alldata$data_length~alldata$group)
+wilcox.test(data_length ~ group, data=alldata, alternative = "two.sided") 
+
+# FOOOF components
+alldata$miss_alpha <- is.na(alldata$alpha_pw)
+xtabs(~miss_alpha+group, alldata)
+chisq.test(xtabs(~miss_alpha+group, alldata))
+
+alldata$miss_beta <- is.na(alldata$beta_pw)
+xtabs(~miss_beta+group, alldata)
 
 #END

@@ -44,6 +44,8 @@ tt = [x == '' for x in date]
 idxer = [a and not b for a, b in zip(is_bb, tt)]
     
 subjid_flt = [i for (i, v) in zip(subjid, idxer) if v]
+subjid_flt = ['0'+s for s in subjid_flt]
+
 date_flt = [i for (i, v) in zip(date, idxer) if v]
 
 subjects_and_dates = [op.join('NatMEG_'+s, d) for (s, d) in zip(subjid_flt, date_flt)]

@@ -1,5 +1,9 @@
-# Get Freesurfer summary statistics of ROI.
-# @mc_vinding
+## Get Freesurfer summary statistics of ROI.
+# Import previously defined ROI and extract Freesurfer summaries.
+#
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+#
+# @mcvinding
 
 startdir=$(pwd)
 source /home/mikkel/PD_long/scripts/setUpFreesurfer.sh

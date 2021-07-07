@@ -1,8 +1,11 @@
 ###########################################################################################
-# Import data to R and save for further analysis and plotting.
-# Subject metadata, clinical data, event length, peak amplitude and time until next event (tue)
-# data per individual event.
-# Arrange into dataframe with one event per row
+# Import data to R and save for further analysis and plotting. Subject metadata, clinical 
+# data, event length, peak amplitude and time until next event (tue) data per individual 
+# event. Arrange into dataframe with one event per row
+#
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+#
+# @mcvinding
 ###########################################################################################
 library(R.matlab)
 library(xlsx)

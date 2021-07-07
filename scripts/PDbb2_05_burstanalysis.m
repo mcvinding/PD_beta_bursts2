@@ -1,5 +1,11 @@
-% Find beta bursts for each subject
-% To do: clean up in this script
+%% Find beta bursts for each subject
+% Import ROI time series. Filter and find bursts.
+% The tool for finding bursts are found herE: https://github.com/mcvinding/beta_bursts
+%
+% Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+%
+%@author: mcvinding
+
 clear all; close all
 addpath('/home/mikkel/fieldtrip/fieldtrip/')
 ft_defaults
@@ -30,7 +36,6 @@ for ss = 1:length(subjects)
 
     % Output
     outfname_raw = fullfile(dirs.meg_path, subj, 'roidata2.mat');
-    outfname_beta_hlb = fullfile(dirs.meg_path, subj, 'roidata_beta_hlbt2.mat');
     outfname_mube_hlb = fullfile(dirs.meg_path, subj, 'roidata_mube_hlbt2.mat');
 
     % Load
@@ -52,16 +57,9 @@ for ss = 1:length(subjects)
         fprintf('saving %s...', outfname_raw); save(outfname_raw, 'roidata'); disp('done')
     end
     
-     if ~exist(outfname_beta_hlb, 'file') || overwrite
-
-        % Band-pass to beta band
-        cfg = [];
-        cfg.bpfilter    = 'yes';
-        cfg.bpfreq      = [13 30];
-        cfg.hilbert     ='abs';
-        roidata_beta_hlb = ft_preprocessing(cfg, roidata);
-
-        % Band-pass to mu+beta band
+    if ~exist(outfname_beta_hlb, 'file') || overwrite
+         
+        % Band-pass to mu band
         cfg = [];
         cfg.bpfilter    = 'yes';
         cfg.bpfreq      = [8 30];
@@ -69,67 +67,34 @@ for ss = 1:length(subjects)
         roidata_mube_hlb = ft_preprocessing(cfg, roidata);
         
         % Save
-        fprintf('saving %s...', outfname_beta_hlb);
-        save(outfname_beta_hlb, 'roidata_beta_hlb'); disp('done')
         fprintf('saving %s...', outfname_mube_hlb);
         save(outfname_mube_hlb, 'roidata_mube_hlb'); disp('done')
         
     elseif exist(outfname_beta_hlb, 'file') && ~overwrite
-        load(outfname_beta_hlb);
         load(outfname_mube_hlb);
      end
     
-    % Different outputs mu (u) and beta (b), avg thresholds (m1), 2x median (m2),
-    % and percentile (pc)
-    outfname_b_m2 = fullfile(dirs.meg_path, subj,[subj,'-b_m2-burst2.mat']);
-    outfname_b_pc = fullfile(dirs.meg_path, subj,[subj,'-b_pc-burst2.mat']);
-    outfname_u_m2 = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst2.mat']);
-    outfname_u_pc = fullfile(dirs.meg_path, subj,[subj,'-u_pc-burst2.mat']);
+    % Outputs mu (u) 2x median (m2)
+    outfname = fullfile(dirs.meg_path, subj,[subj,'-u_m2-burst2.mat']);
  
     % Init
-    burstsummary_b_m2 = [];
-    burstsummary_b_pc = [];
     burstsummary_u_m2 = [];   
-    burstsummary_u_pc = [];
 
-    if exist(outfname_b_m2,'file') && ~overwrite
-        warning('File %s exists. Continue!', outfname_b_m2);
+    if exist(outfname,'file') && ~overwrite
+        warning('File %s exists. Continue!', outfname);
         continue
     end
     
     % BURST ANALSYIS
-    % 2x median beta
-    cfg.steps       = 2;
-    cfg.cutofftype  = 'med';
-    cfg.mindist     = 1/13;
-    burstsummary_b_m2 = find_betaevents(cfg, roidata_beta_hlb);
-        
-    % 80% beta
-    cfg.cutofftype  = 'pct';
-    cfg.steps       = 80;
-    cfg.mindist     = 1/13;
-    burstsummary_b_pc = find_betaevents(cfg, roidata_beta_hlb);
-
-    % 2x median mu+beta
+    % Median + 2x median mu
     cfg.steps       = 2;
     cfg.cutofftype  = 'med';
     cfg.mindist     = 1/13;
     burstsummary_u_m2 = find_betaevents(cfg, roidata_mube_hlb);
 
-    % 80% mu+beta
-    cfg.cutofftype  = 'pct';
-    cfg.steps       = 80;
-    cfg.mindist     = 1/13;
-    burstsummary_u_pc = find_betaevents(cfg, roidata_mube_hlb);
-
-%     end
-
     % Save
     fprintf('saving... ')
-    save(outfname_b_m2, 'burstsummary_b_m2')
-    save(outfname_b_pc, 'burstsummary_b_pc')
-    save(outfname_u_m2, 'burstsummary_u_m2')
-    save(outfname_u_pc, 'burstsummary_u_pc')
+    save(outfname, 'burstsummary_u_m2')
     disp('done')
 end
 

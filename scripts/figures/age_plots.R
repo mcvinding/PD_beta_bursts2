@@ -1,4 +1,8 @@
-#Plots
+# Plots of outcome measures over age. Plot individual measures and model fits.
+#
+# <ref>
+#
+
 library(merTools)
 library(ggplot2)
 library(tibble)
@@ -24,7 +28,7 @@ main_plot <- function(mod, new.dat, old.dat, yname=NA, link="identity") {
   }
   
   Xmat <- model.matrix(~ ~ (group+age.centerd+sex+thickz)^3, data = new.dat)
-  fitmat <- matrix(ncol = nrow(fs), nrow = nrow(newavg))
+  fitmat <- matrix(ncol = nrow(fs), nrow = nrow(new.dat))
   for (i in 1:nrow(fs)) {
     fitmat[, i] <- Xmat %*% as.matrix(fs)[i, ]
   }

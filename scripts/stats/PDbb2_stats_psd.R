@@ -1,4 +1,8 @@
 # PD beta burst statistics: analsyis of PSD output from FOOOF analysis
+#
+# <ref>
+#
+
 library(ggplot2)
 library(arm)
 library(lmtest)

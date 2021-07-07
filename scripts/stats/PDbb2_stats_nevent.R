@@ -1,4 +1,8 @@
-# PD beta burst statistics: analysis of N events
+# PD beta burst statistics: analysis of N events by Poisson regression
+#
+# <ref>
+#
+
 library(lme4)
 library(arm)
 library(ggplot2)

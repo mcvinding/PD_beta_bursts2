@@ -1,8 +1,11 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Get ROI time course from ROI
-@author: mikkel
+Get ROI time course from ROI.
+
+Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+
+@author: mcvinding
 """
 import numpy as np
 import os.path as op

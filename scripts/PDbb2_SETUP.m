@@ -1,5 +1,9 @@
 function [subjects, dirs, subj_date] = PDbb2_SETUP()
 % Setup PDbb2 in MATLAB
+%
+% Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+%
+%@author: mcvinding
 
     % Paths
     dirs.raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/';
@@ -9,6 +13,7 @@ function [subjects, dirs, subj_date] = PDbb2_SETUP()
     % fs_subjects_dir = '/home/mikkel/PD_long/fs_subjects_dir'
     dirs.subj_data_path  = '/home/mikkel/PD_long/subj_data/';
     dirs.group_path      = '/home/mikkel/PD_longrest/groupanalysis';
+    dirs.figures         = '/home/mikkel/PD_longrest/figures';
 
     % Read subjects
     subj_file = fullfile(dirs.subj_data_path, 'subjects_and_dates.csv');

@@ -1,7 +1,10 @@
 ###########################################################################################
-# Import data to R and save for further analysis and plotting.
-# Subject metadata, clinical data, N events data per subject
-# Arrange into dataframe with one subject per row
+# Import data to R and save for further analysis and plotting. Subject metadata, clinical 
+# data, N events data per subject Arrange into dataframe with one subject per row.
+#
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+#
+# @mcvinding
 ###########################################################################################
 library(R.matlab)
 library(xlsx)
@@ -147,13 +150,7 @@ temp <- readMat("neve_u_m2_data2.mat")
 
 subj <- as.factor(unlist(temp$subjects))
 
-# XXX: SORT !!!!
-temp2 <- readMat("neve_b_m2_data2.mat")
-temp3 <- readMat("neve_b_pc_data2.mat")
-temp6 <- readMat("neve_u_pc_data2.mat")
-
-neve.data <- data.frame(nevent.b.m2=temp2$nevent.b.m2,
-                        nevent.u.m2=temp$nevent.u.m2,
+neve.data <- data.frame(nevent.u.m2=temp$nevent.u.m2,
                         subj=subj)
 
 # Get data log and BPM
@@ -163,7 +160,6 @@ data.log$subj <- paste("0",data.log$subj, sep="")
 
 neve.data <- merge(neve.data, data.log, by="subj", all=FALSE)
 neve.data$data_length.min <- neve.data$data_length/60
-neve.data$nevent.b.m2.min <- round(neve.data$nevent.b.m2/neve.data$data_length.min)
 neve.data$nevent.u.m2.min <- round(neve.data$nevent.u.m2/neve.data$data_length.min)
 
 # Save

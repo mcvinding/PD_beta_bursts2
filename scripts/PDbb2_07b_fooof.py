@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-FOOOF analysis of powerspectra in PDbb2 project.
-@author: mikkel
+Analysis of the power spectral density of the ROI time series: use FOOOF /https://fooof-tools.github.io/fooof/index.html) 
+to estimate alpha and beta power and 1/f broadband intercept and slope.
+
+Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
+
+@author: mcvinding
 """
 # Import fooof functions for creating spectra and managing parameters
 import numpy as np

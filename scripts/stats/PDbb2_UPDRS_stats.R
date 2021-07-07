@@ -1,4 +1,8 @@
-# UPDRS stats
+# UPDRS stats: anakysis of sensorimotor feature on MDS-UPDRS-III score deviden into factors.
+#
+# <ref>
+#
+
 library(arm)
 library(lmtest)
 source('X://PD_longrest//scripts//functions//zscore.R')
@@ -329,7 +333,7 @@ sums
 
 ######################################################################################
 # MDS-UPDRS-III Factor 7
-F7mod.x <- glm(U.F7z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
+F7mod.x <- lm(U.F7z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
                  a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
                  age.centerd + sex + thickz, 
                data=pd.data)

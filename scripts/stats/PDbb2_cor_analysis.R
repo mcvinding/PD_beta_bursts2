@@ -1,11 +1,14 @@
-## Correlation analysis
+## Correlation analysis: all-to-all correlation between variables
+#
+# <ref>
+#
+
 library(dplyr)
 library(corrplot)
 library(Hmisc)
 
 # Define paths
 wrkdir <- "X://PD_longrest//groupanalysis"
-# wrkdir <- "C://Users//Mikkel//Documents//PDbb2//groupanalysis"
 setwd(wrkdir)
 
 col<- colorRampPalette(c("blue", "white", "red"))(20)
@@ -25,21 +28,10 @@ cordat <- select(alldata, nevent.u.m2.min, leneve,tueeve,maxeve,
                  age,thick, MoCA,,U.F1,U.F2,U.F3,U.F45,U.F6,U.F7,ledd, pd.dur)
 
 # Correlation
-# cormat <- cor(cordat, use="pairwise.complete.obs")
 cormat <- rcorr(as.matrix(cordat), type="pearson")
 
-corrplot(cormat$r, method="number",p.mat=cormat$P, type="full", sig.level=0.05, insig="blank",diag=F,col=col, cl.pos="n")
-corrplot(cormat$r, sig.level=0.05, insig="label_sig",diag=F,col=col)
-corrplot(cormat$r, method="shade", shade.col=NA, tl.col="black", tl.srt=45, addCoef.col="black", 
-         p.mat=cormat$P, type="full", sig.level=0.05, insig="n",diag=F,col=col, cl.pos="n")
-
-pairs(cordat, pch=".", upper.panel=NULL)
-
 # Export
-write.csv(cormat, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//corrmat2.csv')
-write.csv(cordat, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//corrdat2.csv')
+write.csv(cormat$r, file='X://PD_longrest//groupanalysis//corrmat2r.csv')
+write.csv(cormat$P, file='X://PD_longrest//groupanalysis//corrmat2p.csv')
 
-
-
-
-
+#END

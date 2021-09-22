@@ -7,12 +7,12 @@ library(lme4)
 library(arm)
 library(ggplot2)
 library(car)
-source('X://PD_longrest//scripts//functions//zscore.R')
+library(brms)
+# source('X://PD_longrest//scripts//functions//zscore.R')
 
 ## Load data
 setwd('X://PD_longrest//groupanalysis//')
 load('X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
-# load('C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
 
 # Inspect hist
 ggplot( aes(x=nevent.u.m2.min, fill=group), data=alldata) +
@@ -27,6 +27,21 @@ ggplot(aes(x=age, y=nevent.u.m2.min, color=group, shape=sex), data=alldata)+
 # # LMER regression model
 mod.neve.Full3 <- glm(nevent.u.m2.min ~ (group+age.centerd+sex+thickz)^3, data=alldata, family=poisson)
 anova(mod.neve.Full3, test="Chisq")
+
+p1 <- get_prior(bf(nevent.u.m2.min ~ (group+age.centerd+sex+thickz)^3, family=poisson), data=alldata)
+
+tst <- brm(nevent.u.m2.min ~ (group+age.centerd+sex+thickz)^3,
+                              prior = p1,
+                              family=poisson,
+                              data   = alldata, 
+                              warmup = 1000, iter   = 2000, 
+                              chains = 2, inits  = "random",
+                              cores  = 3)
+                              
+# save_pars('all')) 
+
+
+
 
 # Model summary
 mod.sim <- sim(mod.neve.Full3, n.sims=1000)
@@ -69,6 +84,6 @@ c(exp(x1[3]+x1[5]+x1[10])*100-100,
   quantile(exp(cf[,3]+cf[,5]+cf[,10])*100-100, c(0.025, 0.975)))
 
 ## Save
-save(mod.neve.Full3, file='mod_neve.RData')
+save(mod.neve.Full3, file='mod_neveBF.RData')
 
 #END

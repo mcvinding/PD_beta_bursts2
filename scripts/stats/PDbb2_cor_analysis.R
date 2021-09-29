@@ -1,6 +1,9 @@
 ## Correlation analysis: all-to-all correlation between variables
 #
-# <ref>
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., 
+#  Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor 
+#  rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease [Preprint]. 
+#  medRxiv.org https://doi.org/10.1101/2021.06.27.21259592
 #
 
 library(dplyr)

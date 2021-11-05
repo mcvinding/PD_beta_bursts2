@@ -26,7 +26,7 @@ cfg.halfmax     = 'mixed';
 cfg.makeplot    = 'no';
 cfg.channel     = 'lh_roi';
 
-% Run
+%% Run
 for ss = 1:length(subjects)
     subj = subjects{ss};
     fprintf('Reading subj %s (%i of %i)\n', subj, ss, length(subjects))
@@ -43,7 +43,7 @@ for ss = 1:length(subjects)
     lh_dat = label_tc;
     clear label_tc
     
-    % Make pseudo data
+    % Make FT data
     roidata = [];
     roidata.trial      = {lh_dat};
     roidata.time       = {(1:length(lh_dat))/fsample};
@@ -57,7 +57,7 @@ for ss = 1:length(subjects)
         fprintf('saving %s...', outfname_raw); save(outfname_raw, 'roidata'); disp('done')
     end
     
-    if ~exist(outfname_beta_hlb, 'file') || overwrite
+    if ~exist(outfname_mube_hlb, 'file') || overwrite
          
         % Band-pass to mu band
         cfg = [];

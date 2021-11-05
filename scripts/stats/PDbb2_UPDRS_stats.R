@@ -13,6 +13,7 @@ source('X://PD_longrest//scripts//functions//zscore.R')
 
 # Load data
 wrkdir <- "X://PD_longrest//groupanalysis"
+outdir <- 'X://PD_longrest//output'
 setwd(wrkdir)
 load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 load(file='X://PD_longrest//groupanalysis//bbdata2.Rdata')
@@ -466,5 +467,9 @@ x1 <- coef(F7mod.x)
 x2 <- t(apply(coef(mod7.sim), 2, quantile, c(0.025, 0.975)))
 sums <- cbind(x1, x2)
 sums
+
+# SAVE
+setwd(outdir)
+save("F1mod.x","F2mod.x","F3mod.x","F45mod.x","F6mod.x","F7mod.x", file="updrsmods.RData")
 
 #END

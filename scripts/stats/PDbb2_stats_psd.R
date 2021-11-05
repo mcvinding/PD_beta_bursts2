@@ -15,31 +15,6 @@ library(bayestestR)
 load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
 outdir <- 'X://PD_longrest//output'
 
-# # Inspect
-# ggplot(aes(x=age, y=a_intercept, color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('1/f intercept ~ age')
-# 
-# ggplot(aes(x=age, y=a_slope, color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('1/f slope ~ age')
-# 
-# ggplot(aes(x=age, y=beta_pw, color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('Beta power ~ age')
-# 
-# ggplot(aes(x=age, y=beta_cf, color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('Beta peak freq ~ age')
-# 
-# ggplot(aes(x=age, y=log(alpha_pw), color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('Alpha power ~ age')
-# 
-# ggplot(aes(x=age, y=alpha_cf, color=group, shape=sex), data=alldata)+
-#   geom_point()+geom_smooth(method=lm)+
-#   theme_bw()+ggtitle('Alpha peak freq ~ age')
-
 ######################################################################################
 # 1/f intercept
 finter.Full3 <- lm(a_intercept ~ (group+age.centerd+sex+thickz)^3, data=alldata)

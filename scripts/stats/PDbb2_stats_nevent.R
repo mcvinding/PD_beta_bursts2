@@ -97,6 +97,7 @@ c(exp(x1[3]+x1[5]+x1[10])*100-100,
   quantile(exp(cf[,3]+cf[,5]+cf[,10])*100-100, c(0.025, 0.975)))
 
 ## Save
+setwd('X://PD_longrest//output')
 save(mod.neve.Full3, file='mod_neveBF.RData')
 
 #END

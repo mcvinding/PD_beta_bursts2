@@ -26,7 +26,7 @@ bbdata$thickz <- zscore(bbdata$thick)
 
 ######################################################################################
 ## EVENT LENGTH
-lenmod <- lmer(log.len ~ (group+age.centerd+sex+thickz)^3 + (1|subj), 
+lenmod <- lmer(log.len ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2) + (1|subj), 
                data=bbdata, REML=FALSE)
 qqnorm(resid(lenmod))
 qqline(resid(lenmod))
@@ -37,7 +37,8 @@ lenmod.G   <- update(lenmod.0, ~. +group)
 lenmod.A   <- update(lenmod.G, ~. +age.centerd)
 lenmod.S   <- update(lenmod.A, ~. +sex)
 lenmod.T   <- update(lenmod.S, ~. +thickz)
-lenmod.GA  <- update(lenmod.T, ~. +group:age.centerd)
+lenmod.A2  <- update(lenmod.T, ~. +I(age.centerd^2))
+lenmod.GA  <- update(lenmod.A2, ~. +group:age.centerd)
 lenmod.GS  <- update(lenmod.GA, ~. +group:sex)
 lenmod.GT  <- update(lenmod.GS, ~. +group:thickz)
 lenmod.SA  <- update(lenmod.GT, ~. +sex:age.centerd)
@@ -48,11 +49,12 @@ lenmod.GAT <- update(lenmod.GAS, ~. +group:age.centerd:thickz)
 lenmod.GST <- update(lenmod.GAT, ~. +group:sex:thickz)
 lenmod.AST <- update(lenmod.GST, ~. +age.centerd:sex:thickz)
 
-bayesfactor_models(lenmod.G, denominator  = lenmod.0)
+bayesfactor_models(lenmod.G, denominator   = lenmod.0)
 bayesfactor_models(lenmod.A, denominator   = lenmod.G)
 bayesfactor_models(lenmod.S, denominator   = lenmod.A)
 bayesfactor_models(lenmod.T, denominator   = lenmod.S)
-bayesfactor_models(lenmod.GA, denominator  = lenmod.T)
+bayesfactor_models(lenmod.A2, denominator  = lenmod.T)
+bayesfactor_models(lenmod.GA, denominator  = lenmod.A2)
 bayesfactor_models(lenmod.GS, denominator  = lenmod.GA)
 bayesfactor_models(lenmod.GT, denominator  = lenmod.GS)
 bayesfactor_models(lenmod.SA, denominator  = lenmod.GT)
@@ -68,13 +70,14 @@ anova(lenmod.G,
       lenmod.A, 
       lenmod.S,
       lenmod.T,
+      lenmod.A2,
       lenmod.GA,
       lenmod.GS,
       lenmod.GT,
       lenmod.SA,
       lenmod.AT,
       lenmod.ST,
-      lenmod.GSA,
+      lenmod.GAS,
       lenmod.GAT, 
       lenmod.GST,
       lenmod.AST,
@@ -103,7 +106,7 @@ c(exp(x1[3]+x1[5]+x1[10])*100-100,
 
 ######################################################################################
 ## TIME UNTIL EVENT
-tuemod <- lmer(log.tue ~ (group+age.centerd+sex+thickz)^3 + (1|subj), data=bbdata, REML=FALSE)
+tuemod <- lmer(log.tue ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2) + (1|subj), data=bbdata, REML=FALSE)
 
 qqnorm(resid(tuemod))
 qqline(resid(tuemod))
@@ -114,7 +117,8 @@ tuemod.G   <- update(tuemod.0, ~. +group)
 tuemod.A   <- update(tuemod.G, ~. +age.centerd)
 tuemod.S   <- update(tuemod.A, ~. +sex)
 tuemod.T   <- update(tuemod.S, ~. +thickz)
-tuemod.GA  <- update(tuemod.T, ~. +group:age.centerd)
+tuemod.A2   <- update(tuemod.T, ~. +I(age.centerd^2))
+tuemod.GA  <- update(tuemod.A2, ~. +group:age.centerd)
 tuemod.GS  <- update(tuemod.GA, ~. +group:sex)
 tuemod.GT  <- update(tuemod.GS, ~. +group:thickz)
 tuemod.SA  <- update(tuemod.GT, ~. +sex:age.centerd)
@@ -129,7 +133,8 @@ bayesfactor_models(tuemod.G, denominator   = tuemod.0)
 bayesfactor_models(tuemod.A, denominator   = tuemod.G)
 bayesfactor_models(tuemod.S, denominator   = tuemod.A)
 bayesfactor_models(tuemod.T, denominator   = tuemod.S)
-bayesfactor_models(tuemod.GA, denominator  = tuemod.T)
+bayesfactor_models(tuemod.A2, denominator  = tuemod.T)
+bayesfactor_models(tuemod.GA, denominator  = tuemod.A2)
 bayesfactor_models(tuemod.GS, denominator  = tuemod.GA)
 bayesfactor_models(tuemod.GT, denominator  = tuemod.GS)
 bayesfactor_models(tuemod.SA, denominator  = tuemod.GT)
@@ -145,6 +150,7 @@ anova(tuemod.G,
       tuemod.A, 
       tuemod.S, 
       tuemod.T, 
+      tuemod.A2,
       tuemod.GA,
       tuemod.GS,
       tuemod.GT,
@@ -176,7 +182,7 @@ c(exp(x1[3]+x1[9])*100-100,
 
 ######################################################################################
 ## MAX
-maxmod <- lmer(log.max ~ (group+age.centerd+sex+thickz)^3 + (1|subj), data=bbdata, REML=FALSE)
+maxmod <- lmer(log.max ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2) + (1|subj), data=bbdata, REML=FALSE)
 
 qqnorm(resid(maxmod))
 qqline(resid(maxmod))
@@ -187,7 +193,8 @@ maxmod.G   <- update(maxmod.0, ~. +group)
 maxmod.A   <- update(maxmod.G, ~. +age.centerd)
 maxmod.S   <- update(maxmod.A, ~. +sex)
 maxmod.T   <- update(maxmod.S, ~. +thickz)
-maxmod.GA  <- update(maxmod.T, ~. +group:age.centerd)
+maxmod.A2  <- update(maxmod.T, ~. +I(age.centerd^2))
+maxmod.GA  <- update(maxmod.A2, ~. +group:age.centerd)
 maxmod.GS  <- update(maxmod.GA, ~. +group:sex)
 maxmod.GT  <- update(maxmod.GS, ~. +group:thickz)
 maxmod.SA  <- update(maxmod.GT, ~. +sex:age.centerd)
@@ -202,7 +209,8 @@ bayesfactor_models(maxmod.G, denominator   = maxmod.0)
 bayesfactor_models(maxmod.A, denominator   = maxmod.G)
 bayesfactor_models(maxmod.S, denominator   = maxmod.A)
 bayesfactor_models(maxmod.T, denominator   = maxmod.S)
-bayesfactor_models(maxmod.GA, denominator  = maxmod.T)
+bayesfactor_models(maxmod.A2, denominator  = maxmod.T)
+bayesfactor_models(maxmod.GA, denominator  = maxmod.A2)
 bayesfactor_models(maxmod.GS, denominator  = maxmod.GA)
 bayesfactor_models(maxmod.GT, denominator  = maxmod.GS)
 bayesfactor_models(maxmod.SA, denominator  = maxmod.GT)
@@ -218,6 +226,7 @@ anova(maxmod.G,
       maxmod.A,
       maxmod.S,
       maxmod.T,
+      maxmod.A2,
       maxmod.GA,
       maxmod.GS,
       maxmod.GT,

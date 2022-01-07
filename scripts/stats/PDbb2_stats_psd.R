@@ -17,10 +17,11 @@ outdir <- 'X://PD_longrest//output'
 
 ######################################################################################
 # 1/f intercept
-finter.Full3 <- lm(a_intercept ~ (group+age.centerd+sex+thickz)^3, data=alldata)
-
+finter.Full3 <- lm(a_intercept ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
 qqnorm(resid(finter.Full3))
 qqline(resid(finter.Full3))
+
+anova(finter.Full3, test="Chisq")
 
 # LMER regression model (BIC method)
 finter.0 <- lm(a_intercept ~ 1, data=alldata)
@@ -28,7 +29,8 @@ finter.G   <- update(finter.0, ~. +group)
 finter.A   <- update(finter.G, ~. +age.centerd)
 finter.S   <- update(finter.A, ~. +sex)
 finter.T   <- update(finter.S, ~. +thickz)
-finter.GA  <- update(finter.T, ~. +group:age.centerd)
+finter.A2  <- update(finter.T, ~. +I(age.centerd^2))
+finter.GA  <- update(finter.A2, ~. +group:age.centerd)
 finter.GS  <- update(finter.GA, ~. +group:sex)
 finter.GT  <- update(finter.GS, ~. +group:thickz)
 finter.SA  <- update(finter.GT, ~. +sex:age.centerd)
@@ -43,7 +45,8 @@ bayesfactor_models(finter.G, denominator   = finter.0)
 bayesfactor_models(finter.A, denominator   = finter.G)
 bayesfactor_models(finter.S, denominator   = finter.A)
 bayesfactor_models(finter.T, denominator   = finter.S)
-bayesfactor_models(finter.GA, denominator  = finter.T)
+bayesfactor_models(finter.A2, denominator  = finter.T)
+bayesfactor_models(finter.GA, denominator  = finter.A2)
 bayesfactor_models(finter.GS, denominator  = finter.GA)
 bayesfactor_models(finter.GT, denominator  = finter.GS)
 bayesfactor_models(finter.SA, denominator  = finter.GT)
@@ -60,6 +63,7 @@ lrtest(finter.0,
        finter.A,
        finter.S,
        finter.T,
+       finter.A2,
        finter.GA,
        finter.GS,
        finter.GT,
@@ -78,30 +82,34 @@ x1 <- coef(finter.Full3)
 x2 <- t(apply(coef(inter.sim), 2, quantile, c(0.025, 0.975)))
 cbind(x1, x2)
 
-# Group: female
-# x1+x2 - x1 / x1
-c((x1[2]/abs(x1[1]))*100,
-  quantile(((coef(inter.sim)[,2]/abs(coef(inter.sim)[,1])))*100, c(0.025, 0.975)))
+# Group % change
+c((x1[2]/x1[1])*100,
+  quantile((coef(inter.sim)[,2]/coef(inter.sim)[,1])*100, c(0.025, 0.975)))
 
-# Group: male
-# x1+x2+x4+x7 - x1+x4 / 
-c(((x1[2]+x1[7])/abs((x1[1]+x1[4])))*100,
-  quantile((coef(inter.sim)[,2]+coef(inter.sim)[,7])/abs(coef(inter.sim)[,2]+coef(inter.sim)[,1])*100, c(0.025, 0.975)))
-
-# male-female ptns
-# x1+x2+x4+x7 - x1+x2
-c(((x1[4]+x1[7])/abs((x1[1]+x1[2])))*100,
-  quantile((coef(inter.sim)[,4]+coef(inter.sim)[,7])/abs(coef(inter.sim)[,2]+coef(inter.sim)[,1])*100, c(0.025, 0.975)))
-
-
-# male-female ctrl
-# x1+x4 - x1 /
-c((x1[4]/abs(x1[1]))*100,
-  quantile(((coef(inter.sim)[,4]/abs(coef(inter.sim)[,1])))*100, c(0.025, 0.975)))
+# # Group: female
+# # x1+x2 - x1 / x1
+# c((x1[2]/abs(x1[1]))*100,
+#   quantile(((coef(inter.sim)[,2]/abs(coef(inter.sim)[,1])))*100, c(0.025, 0.975)))
+# 
+# # Group: male
+# # x1+x2+x4+x7 - x1+x4 / 
+# c(((x1[2]+x1[7])/abs((x1[1]+x1[4])))*100,
+#   quantile((coef(inter.sim)[,2]+coef(inter.sim)[,7])/abs(coef(inter.sim)[,2]+coef(inter.sim)[,1])*100, c(0.025, 0.975)))
+# 
+# # male-female ptns
+# # x1+x2+x4+x7 - x1+x2
+# c(((x1[4]+x1[7])/abs((x1[1]+x1[2])))*100,
+#   quantile((coef(inter.sim)[,4]+coef(inter.sim)[,7])/abs(coef(inter.sim)[,2]+coef(inter.sim)[,1])*100, c(0.025, 0.975)))
+# 
+# 
+# # male-female ctrl
+# # x1+x4 - x1 /
+# c((x1[4]/abs(x1[1]))*100,
+#   quantile(((coef(inter.sim)[,4]/abs(coef(inter.sim)[,1])))*100, c(0.025, 0.975)))
 
 ######################################################################################
 # 1/f slope
-fslope.Full3 <- lm(a_slope ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+fslope.Full3 <- lm(a_slope ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
  
 qqnorm(resid(fslope.Full3))
 qqline(resid(fslope.Full3))
@@ -112,7 +120,8 @@ fslope.G   <- update(fslope.0, ~. +group)
 fslope.A   <- update(fslope.G, ~. +age.centerd)
 fslope.S   <- update(fslope.A, ~. +sex)
 fslope.T   <- update(fslope.S, ~. +thickz)
-fslope.GA  <- update(fslope.T, ~. +group:age.centerd)
+fslope.A2  <- update(fslope.T, ~. +I(age.centerd^2))
+fslope.GA  <- update(fslope.A2, ~. +group:age.centerd)
 fslope.GS  <- update(fslope.GA, ~. +group:sex)
 fslope.GT  <- update(fslope.GS, ~. +group:thickz)
 fslope.SA  <- update(fslope.GT, ~. +sex:age.centerd)
@@ -127,7 +136,8 @@ bayesfactor_models(fslope.G, denominator   = fslope.0)
 bayesfactor_models(fslope.A, denominator   = fslope.G)
 bayesfactor_models(fslope.S, denominator   = fslope.A)
 bayesfactor_models(fslope.T, denominator   = fslope.S)
-bayesfactor_models(fslope.GA, denominator  = fslope.T)
+bayesfactor_models(fslope.A2, denominator  = fslope.T)
+bayesfactor_models(fslope.GA, denominator  = fslope.A2)
 bayesfactor_models(fslope.GS, denominator  = fslope.GA)
 bayesfactor_models(fslope.GT, denominator  = fslope.GS)
 bayesfactor_models(fslope.SA, denominator  = fslope.GT)
@@ -144,6 +154,7 @@ lrtest(fslope.0,
        fslope.A,
        fslope.S,
        fslope.T,
+       fslope.A2,
        fslope.GA,
        fslope.GS,
        fslope.GT,
@@ -156,22 +167,22 @@ lrtest(fslope.0,
        fslope.AST)
 
 # Model summary
-mod.sim <- sim(fslope.Full3, n.sims=1000)
+slope.sim <- sim(fslope.Full3, n.sims=1000)
 x1 <- coef(fslope.Full3)
 x2 <- t(apply(coef(mod.sim), 2, quantile, c(0.025, 0.975)))
 round(cbind(x1, x2), digits=3)
 
 # Group
 c((x1[2]/x1[1])*100,
-  quantile((coef(mod.sim)[,2]/coef(mod.sim)[,1])*100, c(0.025, 0.975)))
-
-# Thickness
-c(((x1[5]/x1[1]))*100,
-  quantile(((coef(mod.sim)[,5]/coef(mod.sim)[,1]))*100, c(0.025, 0.975)))
+  quantile((coef(slope.sim)[,2]/coef(slope.sim)[,1])*100, c(0.025, 0.975)))
+# 
+# # Thickness
+# c(((x1[5]/x1[1]))*100,
+#   quantile(((coef(mod.sim)[,5]/coef(mod.sim)[,1]))*100, c(0.025, 0.975)))
 
 ######################################################################################
 # Beta power
-beta_pw.Full3 <- lm(beta_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+beta_pw.Full3 <- lm(beta_pw ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
 
 qqnorm(resid(beta_pw.Full3))
 qqline(resid(beta_pw.Full3))
@@ -182,7 +193,8 @@ beta_pw.G   <- update(beta_pw.0, ~. +group)
 beta_pw.A   <- update(beta_pw.G, ~. +age.centerd)
 beta_pw.S   <- update(beta_pw.A, ~. +sex)
 beta_pw.T   <- update(beta_pw.S, ~. +thickz)
-beta_pw.GA  <- update(beta_pw.T, ~. +group:age.centerd)
+beta_pw.A2  <- update(beta_pw.T, ~. +I(age.centerd^2))
+beta_pw.GA  <- update(beta_pw.A2, ~. +group:age.centerd)
 beta_pw.GS  <- update(beta_pw.GA, ~. +group:sex)
 beta_pw.GT  <- update(beta_pw.GS, ~. +group:thickz)
 beta_pw.SA  <- update(beta_pw.GT, ~. +sex:age.centerd)
@@ -197,7 +209,8 @@ bayesfactor_models(beta_pw.G, denominator   = beta_pw.0)
 bayesfactor_models(beta_pw.A, denominator   = beta_pw.G)
 bayesfactor_models(beta_pw.S, denominator   = beta_pw.A)
 bayesfactor_models(beta_pw.T, denominator   = beta_pw.S)
-bayesfactor_models(beta_pw.GA, denominator  = beta_pw.T)
+bayesfactor_models(beta_pw.A2, denominator  = beta_pw.T)
+bayesfactor_models(beta_pw.GA, denominator  = beta_pw.A2)
 bayesfactor_models(beta_pw.GS, denominator  = beta_pw.GA)
 bayesfactor_models(beta_pw.GT, denominator  = beta_pw.GS)
 bayesfactor_models(beta_pw.SA, denominator  = beta_pw.GT)
@@ -214,6 +227,7 @@ lrtest(beta_pw.0,
        beta_pw.A,
        beta_pw.S,
        beta_pw.T,
+       beta_pw.A2,
        beta_pw.GA,
        beta_pw.GS,
        beta_pw.GT,
@@ -240,7 +254,7 @@ quantile(((coef(beta_pw.sim)[,3]/coef(beta_pw.sim)[,1]))*100, c(0.025, 0.975))
 
 ######################################################################################
 # Beta peak freq
-beta_cf.Full3 <- lm(beta_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+beta_cf.Full3 <- lm(beta_cf ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
 
 qqnorm(resid(beta_cf.Full3))
 qqline(resid(beta_cf.Full3))
@@ -251,7 +265,8 @@ beta_cf.G   <- update(beta_cf.0, ~. +group)
 beta_cf.A   <- update(beta_cf.G, ~. +age.centerd)
 beta_cf.S   <- update(beta_cf.A, ~. +sex)
 beta_cf.T   <- update(beta_cf.S, ~. +thickz)
-beta_cf.GA  <- update(beta_cf.T, ~. +group:age.centerd)
+beta_cf.A2  <- update(beta_cf.T, ~. +I(age.centerd^2))
+beta_cf.GA  <- update(beta_cf.A2, ~. +group:age.centerd)
 beta_cf.GS  <- update(beta_cf.GA, ~. +group:sex)
 beta_cf.GT  <- update(beta_cf.GS, ~. +group:thickz)
 beta_cf.SA  <- update(beta_cf.GT, ~. +sex:age.centerd)
@@ -266,7 +281,8 @@ bayesfactor_models(beta_cf.G, denominator   = beta_cf.0)
 bayesfactor_models(beta_cf.A, denominator   = beta_cf.G)
 bayesfactor_models(beta_cf.S, denominator   = beta_cf.A)
 bayesfactor_models(beta_cf.T, denominator   = beta_cf.S)
-bayesfactor_models(beta_cf.GA, denominator  = beta_cf.T)
+bayesfactor_models(beta_cf.A2, denominator  = beta_cf.T)
+bayesfactor_models(beta_cf.GA, denominator  = beta_cf.A2)
 bayesfactor_models(beta_cf.GS, denominator  = beta_cf.GA)
 bayesfactor_models(beta_cf.GT, denominator  = beta_cf.GS)
 bayesfactor_models(beta_cf.SA, denominator  = beta_cf.GT)
@@ -282,6 +298,7 @@ lrtest(beta_cf.0,
        beta_cf.A,
        beta_cf.S,
        beta_cf.T,
+       beta_cf.A2,
        beta_cf.GA,
        beta_cf.GS,
        beta_cf.GT,
@@ -301,7 +318,7 @@ round(cbind(x1, x2), digits=3)
 
 ######################################################################################
 # Alpha power
-alpha_pw.Full3 <- lm(alpha_pw ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+alpha_pw.Full3 <- lm(alpha_pw ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
 
 qqnorm(resid(alpha_pw.Full3))
 qqline(resid(alpha_pw.Full3))
@@ -312,7 +329,8 @@ alpha_pw.G   <- update(alpha_pw.0, ~. +group)
 alpha_pw.A   <- update(alpha_pw.G, ~. +age.centerd)
 alpha_pw.S   <- update(alpha_pw.A, ~. +sex)
 alpha_pw.T   <- update(alpha_pw.S, ~. +thickz)
-alpha_pw.GA  <- update(alpha_pw.T, ~. +group:age.centerd)
+alpha_pw.A2  <- update(alpha_pw.T, ~. +I(age.centerd^2))
+alpha_pw.GA  <- update(alpha_pw.A2, ~. +group:age.centerd)
 alpha_pw.GS  <- update(alpha_pw.GA, ~. +group:sex)
 alpha_pw.GT  <- update(alpha_pw.GS, ~. +group:thickz)
 alpha_pw.SA  <- update(alpha_pw.GT, ~. +sex:age.centerd)
@@ -327,7 +345,8 @@ bayesfactor_models(alpha_pw.G, denominator   = alpha_pw.0)
 bayesfactor_models(alpha_pw.A, denominator   = alpha_pw.G)
 bayesfactor_models(alpha_pw.S, denominator   = alpha_pw.A)
 bayesfactor_models(alpha_pw.T, denominator   = alpha_pw.S)
-bayesfactor_models(alpha_pw.GA, denominator  = alpha_pw.T)
+bayesfactor_models(alpha_pw.A2, denominator  = alpha_pw.T)
+bayesfactor_models(alpha_pw.GA, denominator  = alpha_pw.A2)
 bayesfactor_models(alpha_pw.GS, denominator  = alpha_pw.GA)
 bayesfactor_models(alpha_pw.GT, denominator  = alpha_pw.GS)
 bayesfactor_models(alpha_pw.SA, denominator  = alpha_pw.GT)
@@ -343,6 +362,7 @@ lrtest(alpha_pw.0,
        alpha_pw.A,
        alpha_pw.S,
        alpha_pw.T,
+       alpha_pw.A2,
        alpha_pw.GA,
        alpha_pw.GS,
        alpha_pw.GT,
@@ -362,7 +382,7 @@ round(cbind(x1, x2), digits=3)
 
 ######################################################################################
 # Alpha peak freq
-alpha_cf.Full3 <- lm(alpha_cf ~ (group+age.centerd+sex+thickz)^3, data=alldata)
+alpha_cf.Full3 <- lm(alpha_cf ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
 
 qqnorm(resid(alpha_cf.Full3))
 qqline(resid(alpha_cf.Full3))
@@ -373,7 +393,8 @@ alpha_cf.G   <- update(alpha_cf.0, ~. +group)
 alpha_cf.A   <- update(alpha_cf.G, ~. +age.centerd)
 alpha_cf.S   <- update(alpha_cf.A, ~. +sex)
 alpha_cf.T   <- update(alpha_cf.S, ~. +thickz)
-alpha_cf.GA  <- update(alpha_cf.T, ~. +group:age.centerd)
+alpha_cf.A2  <- update(alpha_cf.T, ~. +I(age.centerd^2))
+alpha_cf.GA  <- update(alpha_cf.A2, ~. +group:age.centerd)
 alpha_cf.GS  <- update(alpha_cf.GA, ~. +group:sex)
 alpha_cf.GT  <- update(alpha_cf.GS, ~. +group:thickz)
 alpha_cf.SA  <- update(alpha_cf.GT, ~. +sex:age.centerd)
@@ -388,7 +409,8 @@ bayesfactor_models(alpha_cf.G, denominator   = alpha_cf.0)
 bayesfactor_models(alpha_cf.A, denominator   = alpha_cf.G)
 bayesfactor_models(alpha_cf.S, denominator   = alpha_cf.A)
 bayesfactor_models(alpha_cf.T, denominator   = alpha_cf.S)
-bayesfactor_models(alpha_cf.GA, denominator  = alpha_cf.T)
+bayesfactor_models(alpha_cf.A2, denominator  = alpha_cf.T)
+bayesfactor_models(alpha_cf.GA, denominator  = alpha_cf.A2)
 bayesfactor_models(alpha_cf.GS, denominator  = alpha_cf.GA)
 bayesfactor_models(alpha_cf.GT, denominator  = alpha_cf.GS)
 bayesfactor_models(alpha_cf.SA, denominator  = alpha_cf.GT)
@@ -399,22 +421,22 @@ bayesfactor_models(alpha_cf.GAT, denominator = alpha_cf.GAS)
 bayesfactor_models(alpha_cf.GST, denominator = alpha_cf.GAT)
 bayesfactor_models(alpha_cf.AST, denominator = alpha_cf.GAT)
 
-
-lrtest(alpha_cf.G,
+lrtest(alpha_cf.0,
+       alpha_cf.G,
        alpha_cf.A,
        alpha_cf.S,
        alpha_cf.T,
+       alpha_cf.A2,
        alpha_cf.GA,
        alpha_cf.GS,
        alpha_cf.GT,
        alpha_cf.SA,
        alpha_cf.AT,
        alpha_cf.ST,
-       alpha_cf.GSA,
+       alpha_cf.GAS,
        alpha_cf.GAT,
        alpha_cf.GST,
-       alpha_cf.AST, 
-       alpha_cf.Full3)
+       alpha_cf.AST)
 
 # Model summary
 alpha_cf.sim <- sim(alpha_cf.Full3, n.sims=1000)

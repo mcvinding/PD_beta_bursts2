@@ -20,6 +20,7 @@ if sys.platform == 'linux':
     # old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
     fs_subjects_dir = '/home/mikkel/PD_long/fs_subjects_dir'
     subj_data_path  = '/home/mikkel/PD_long/subj_data/'
+    grp_data_path   = '/home/mikkel/PD_longrest/groupanalysis'
 else:
 #    raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
 #    old_raw_path    = '/archive/20055_parkinson_motor/MEG'
@@ -92,6 +93,17 @@ exceptions = {
     '0352':'rest_ec_2_mc_trans_tsss_max95'  # Multiple MaxFilter files
     }
 
+
+#%% Grouping
+data_file = op.join(grp_data_path, 'alldata_subj2.csv')
+
+with open(data_file, newline='') as csvfile:
+    tmp = csv.reader(csvfile, delimiter=',', quotechar='"')
+    group = []
+    for ii, row in enumerate(tmp):
+        group.append(row[10])
+
+group = group[1:]
 
 #%% Settings
 spacing = 'ico4'

@@ -12,15 +12,12 @@ library(lme4)
 library(ggplot2)
 setwd('X://PD_longrest//output')
 
-
-
-sjt.lmer(lenmod)
 tab_model(mod.neve.Full3, transform = NULL)
 tab_model(lenmod, transform = NULL)
 
 ## PLOT ANALYSIS 1
 # Variable names
-a.labels <- c("Group", "Age", "Sex", "Cortical thickness",
+a.labels <- c("Group", "Age", "Sex", "Cortical thickness", "Age^2",
               "Group:Age", "Group:Sex", "Group:Cortical thickness", "Age:Sex", "Age:Cortical thickness", "Sex:Cortical thickness",
               "Group:Age:Sex", "Group:Age:Cortical thickness", "Group:Sex:Cortical thickness", "Age:Sex:Cortical thickness"
 )
@@ -43,12 +40,11 @@ eve.plt <- plot_models(mods, grid = TRUE, std.est = "std", transform = NULL,
             axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
             show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
             digits = 3, value.size=3, colors="bw")
-eve.plt <- eve.plt + scale_y_continuous(limits=c(-1.5, 1.5)) + theme_bw()
+eve.plt <- eve.plt + scale_y_continuous(limits=c(-1.25, 1.4)) + theme_bw()
 eve.plt
 
 ggsave("modplt_eve.png", eve.plt, dpi=900,
        width=100, height=50, units="mm", scale=3)
-
 
 ## Plot PSD stats
 # Load models
@@ -73,7 +69,7 @@ psd.plt <- plot_models(mods, grid = TRUE, std.est = "std2", transform = NULL,
                        axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
                        show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
                        digits = 3, value.size=3, colors="bw")
-psd.plt <- psd.plt + scale_y_continuous(limits=c(-1.5, 1.6)) + theme_bw()
+psd.plt <- psd.plt + scale_y_continuous(limits=c(-1.25, 1.5)) + theme_bw()
 psd.plt
 
 ggsave("modplt_psd.png", psd.plt, dpi=900,

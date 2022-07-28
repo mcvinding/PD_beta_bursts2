@@ -11,7 +11,7 @@ The following data analysis software and programming languages were uses in the 
 * MNE-Python (www.mne.tools) in Python 3.6
 * Freesurfer (http://freesurfer.net/)
 * FieldTrip (www.fieldtriptoolbox.org) in Matlab 2016b
-* FOOOF (https://fooof-tools.github.io/fooof)
+* FOOOF (https://fooof-tools.github.io/fooof) in Python 3.6
 * *R* packages:
     * lme4
     * ggplot2

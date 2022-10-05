@@ -1,0 +1,15 @@
+# .gitignore
+
+# Local folders
+figures/
+groupanalysis/
+log/
+meg_data/
+old/
+output/
+
+# Pycache
+*__pycache__
+
+# Misc files
+*sandbox*

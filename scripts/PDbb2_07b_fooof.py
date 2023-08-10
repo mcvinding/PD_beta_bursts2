@@ -38,10 +38,12 @@ bands = Bands({'delta' : [1, 4],
                'gamma' : [30, 45]})
 
 # Constrain analysis
-max_n_peaks = 8
-peak_wlim   = [0.75, 12]
-freq_range  = [1, 45]
-              
+max_n_peaks     = 8
+peak_wlim       = [0.75, 12]
+freq_range      = [1, 45]
+peak_threshold  = 2
+min_peak_height = 0.05
+
 #%% Load and collect data
 all_psd = np.zeros((len(subjects), 137))
 all_freqs = np.zeros((len(subjects), 137))
@@ -60,18 +62,18 @@ for ii, subj in enumerate(subjects):
     all_freqs[ii,:] = sio.loadmat(psdfname)['freqs'][0]
 
     # Individual FOOOF analysis  (for inspection)
-    fm = FOOOF(max_n_peaks=max_n_peaks, peak_threshold=2, peak_width_limits=peak_wlim, 
-               aperiodic_mode='fixed', min_peak_height=0.05)
+    fm = FOOOF(max_n_peaks=max_n_peaks, peak_threshold=peak_threshold, peak_width_limits=peak_wlim, 
+                aperiodic_mode='fixed', min_peak_height=min_peak_height)
 
     # Report: fit the model, print the resulting parameters, and plot the reconstruction
     fm.report(all_freqs[ii,], all_psd[ii,], freq_range)
     plt.title(subj)
-    plt.savefig(op.join(figdir, 'fooof_psd2.jpg'))
-    plt.close()
+    # plt.savefig(op.join(figdir, 'fooof_psd2.jpg'))
+    # plt.close()
 
 #%% FOOOF analysis
-fg = FOOOFGroup(max_n_peaks=max_n_peaks, peak_threshold=2, peak_width_limits=peak_wlim, 
-                aperiodic_mode='fixed', min_peak_height=0.05)
+fg = FOOOFGroup(max_n_peaks=max_n_peaks, peak_threshold=peak_threshold, peak_width_limits=peak_wlim, 
+                aperiodic_mode='fixed', min_peak_height=min_peak_height)
 fg.fit(all_freqs[0], all_psd)
 
 # Get parameters
@@ -87,6 +89,13 @@ fg.plot()
 plot_peak_params(alpha, freq_range=bands.alpha)
 plot_peak_params(beta, freq_range=bands.beta)
 plot_aperiodic_params(aper)
+
+#%% Get model error
+fooof_err = [None]*len(subjects)
+for ii, subj in enumerate(subjects):
+    fooof_err[ii] = fg.get_fooof(ind=ii).r_squared_
+    
+fooof_err = np.array(fooof_err)
 
 #%% Export
 df_dct = {'subj':subjects,
@@ -106,15 +115,17 @@ df_dct = {'subj':subjects,
       'beta_bw': beta[:,2],
       'gamma_cf': gamma[:,0],
       'gamma_pw': gamma[:,1],
-      'gamma_bw': gamma[:,2]}
+      'gamma_bw': gamma[:,2],
+      'rsqrd': fooof_err}
 
 df = pandas.DataFrame(df_dct)
 
 # save to csv    
 df.to_csv('/home/mikkel/PD_longrest/groupanalysis/fooof_df2.csv', index=False, sep=';')
 
+
 #%% Plot example
 fm.report(all_freqs[0], all_psd[1])
-plt.savefig('/home/mikkel/PD_longrest/figures/psd_example.jpg', dpi=600)
+plt.savefig('/home/mikkel/PD_longrest/figures/psd_example.jpg', dpi=800)
 
 #END

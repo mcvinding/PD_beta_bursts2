@@ -10,7 +10,7 @@ library(sjPlot)
 library(sjmisc)
 library(lme4)
 library(ggplot2)
-setwd('X://PD_longrest//output')
+setwd('~/PD_longrest/output')
 
 tab_model(mod.neve.Full3, transform = NULL)
 tab_model(lenmod, transform = NULL)
@@ -18,9 +18,9 @@ tab_model(lenmod, transform = NULL)
 ## PLOT ANALYSIS 1
 # Variable names
 a.labels <- c("Group", "Age", "Sex", "Cortical thickness", "Age^2",
-              "Group:Age", "Group:Sex", "Group:Cortical thickness", "Age:Sex", "Age:Cortical thickness", "Sex:Cortical thickness",
-              "Group:Age:Sex", "Group:Age:Cortical thickness", "Group:Sex:Cortical thickness", "Age:Sex:Cortical thickness"
-)
+              "Group:Age", "Group:Sex", "Group:Cortical thickness", "Age:Sex", "Age:Cortical thickness", "Sex:Cortical thickness")
+              # "Group:Age:Sex", "Group:Age:Cortical thickness", "Group:Sex:Cortical thickness", "Age:Sex:Cortical thickness")
+
 a.labels <- rev(a.labels)
 
 ## Plot burst stats
@@ -30,21 +30,56 @@ load(file='lenmod.RData')
 load(file='tuemod.RData')
 load(file='maxmod.RData')
 
-mods <- list(mod.neve.Full3, lenmod, tuemod, maxmod)
+mods <- list(mod.neve.Full2, lenmod, tuemod, maxmod)
 m.labels <- c("Rate", "Length", "Interval", "Amplitude")
 mods <- rev(mods)
 m.labels <- rev(m.labels)
 
 # Plot
-eve.plt <- plot_models(mods, grid = TRUE, std.est = "std", transform = NULL,
-            axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
-            show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
+eve.plt <- plot_models(mod.neve.ST, grid = TRUE, std.est = "std", transform = NULL, ci.lvl = 0.95,
+            axis.labels = a.labels, m.labels = m.labels, vline.color = "gray", show.intercept = FALSE,
+            show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = TRUE, show.legend = FALSE,
             digits = 3, value.size=3, colors="bw")
 eve.plt <- eve.plt + scale_y_continuous(limits=c(-1.25, 1.4)) + theme_bw()
+eve.plt <- eve.plt + scale_y_continuous(limits=c(-0.25, 0.25)) + theme_bw()
 eve.plt
 
+# USE THIS PLOT!!!1
+# and different inner/outer probabilities of the HDI
+plot_model(mod.neve.Full2_bf, 
+           type = "est",
+  bpe = "mean",
+  # bpe.style = "dot",
+  bpe.color = "red",
+  prob.inner = .50,
+  prob.outer = .95,
+  show.p = TRUE,
+  p.style = "asterisk",
+  colors="bw",
+  vline.color = "gray",
+  axis.labels = a.labels,
+  show.values = TRUE,
+  title = "Burst rate"
+) + scale_y_continuous(limits=c(0.7, 1.3)) + theme_bw()
+                       
 ggsave("modplt_eve.png", eve.plt, dpi=900,
        width=100, height=50, units="mm", scale=3)
+
+plot_model(mod.neve.Full2_bf, 
+           type = "pred",
+           bpe = "mean",
+           # bpe.style = "dot",
+           bpe.color = "red",
+           prob.inner = .50,
+           prob.outer = .95,
+           show.p = TRUE,
+           p.style = "asterisk",
+           colors="bw",
+           vline.color = "gray",
+           axis.labels = a.labels,
+           show.values = TRUE,
+           title = "Burst rate"
+)
 
 ## Plot PSD stats
 # Load models
@@ -101,6 +136,17 @@ updrs.plt <- plot_models(mods, grid = TRUE, std.est = NULL, transform = NULL, ax
                          digits = 3, value.size=3, colors="bw")
 updrs.plt <- updrs.plt + scale_y_continuous(limits=c(-2.5, 2)) + theme_bw()
 updrs.plt
+
+updrs.plt <- plot_models(F45mod.x, show.intercept = FALSE, rm.terms = 'b_Intercept')
+updrs.plt
+
+
+, grid = TRUE, std.est = NULL, transform = NULL, axis.lim=c(-2,2),
+                         axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
+                         show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
+                         digits = 3, value.size=3, colors="bw")
+updrs.plt
+
 
 ggsave("modplt_updrs.png", updrs.plt, dpi=900,
        width=140, height=50, units="mm", scale=3)

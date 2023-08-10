@@ -9,14 +9,14 @@
 library(R.matlab)
 library(xlsx)
 library(freesurfer)
-source('X://PD_longrest//scripts//functions//zscore.R')
+source('/home/mikkel/PD_longrest/scripts/functions/zscore.R')
 
 # Define paths
-wrkdir <- "X://PD_longrest//groupanalysis"
+wrkdir <- "/home/mikkel/PD_longrest/groupanalysis"
 setwd(wrkdir)
 
 # Create array to mark rejected subjects
-check.data <- read.xlsx2('X://PD_long//subj_data//subjects_and_dates.xlsx', 1)
+check.data <- read.xlsx2('/home/mikkel/PD_long/subj_data/subjects_and_dates.xlsx', 1)
 check.data$id <- as.factor(check.data$i)
 check.data <- subset(check.data, rest_ec=="1")
 
@@ -24,9 +24,9 @@ check.data <- subset(check.data, rest_ec=="1")
 # %%% IMPORT SUBJECT DATA %%%
 ###########################################################################################
 # Get "New" subjects
-subj_data <- read.xlsx2('X://PD_long//subj_data//subj_data_anonymised.xlsx', 1)
-subj_data$age <- as.numeric(as.character(subj_data$Age.))
-subj_data$sex <- as.factor(ifelse(subj_data$Sex.== 'M' | subj_data$Sex. == "M ", 'M', "F"  ))
+subj_data <- read.xlsx2('/home/mikkel/PD_long/subj_data/subj_data_anonymised.xlsx', 1)
+subj_data$age <- as.numeric(as.character(subj_data$Age))
+subj_data$sex <- as.factor(ifelse(subj_data$Sex== 'M' | subj_data$Sex == "M ", 'M', "F"  ))
 subj_data$group <- as.factor(ifelse(subj_data$Type== 'Control' | subj_data$Type == "Control ", 'control', "patient"))
 subj_data$subj <- as.factor(paste("0", subj_data$Study_id, sep=""))
 subj_data$Years_Edu <- as.numeric(as.character(subj_data$Years_Edu))
@@ -45,7 +45,7 @@ sdata1 <- data.frame(subj      = subj_data$subj,
                      BDI       = subj_data$BDI)
 
 # Get "Old" subjects
-load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
+load(file='/home/mikkel/PD_long/subj_data/PD_motor_data/alldata.RData')
 sdata2 <- data.frame(subj      = paste("0",alldata$MEG_ID, sep=""),
                      group     = alldata$Sub_type,
                      sex       = alldata$sex,
@@ -62,15 +62,12 @@ sdata <- rbind(sdata1, sdata2)
 sdata <- subset(sdata, sdata$subj %in% check.data$id)
 
 # Save
-save(sdata, file='X://PD_longrest//groupanalysis//sdata.Rdata')
-
-# (re)load
-load(file='X://PD_longrest//groupanalysis//sdata.Rdata')
+save(sdata, file='/home/mikkel/PD_longrest/groupanalysis/sdata.Rdata')
 
 ###########################################################################################
 # %%% IMPORT CLINICAL TEST DATA %%%
 ###########################################################################################
-utemp <- read.csv('X://PD_long//subj_data//UPDRS_PD_MEG_subscales.csv', sep=";")
+utemp <- read.csv('/home/mikkel/PD_long/subj_data/UPDRS_PD_MEG_2020.csv', sep=",")
 udata1 <- data.frame(subj     = as.factor(paste("0",utemp$Study_id, sep="")),
                      HY.stage = as.factor(as.numeric(as.character(utemp$H_Y_STAGE))),
                      UPDRS    = as.numeric(as.character(utemp$UPDRS_TOTAL)),
@@ -82,7 +79,7 @@ udata1 <- data.frame(subj     = as.factor(paste("0",utemp$Study_id, sep="")),
                      U.F6     = as.numeric(as.character(utemp$F6)),
                      U.F7     = as.numeric(as.character(utemp$F7)))
 
-utemp2 <- read.xlsx('C://Users//Mikkel//Documents//betabursts//groupanalysis//UPDRS_raw.xlsx',1,header=T)
+utemp2 <- read.xlsx('/home/mikkel/PD_long/subj_data/PD_motor_data/UPDRS_raw.xlsx',1,header=T)
 utemp2 <- subset(utemp2, session=="2")
 udata2 <- data.frame(id     = as.factor(utemp2$id),
                      UPDRS  = utemp2$Total,
@@ -94,7 +91,6 @@ udata2 <- data.frame(id     = as.factor(utemp2$id),
                      U.F6   = as.numeric(as.character(utemp2$F6)),
                      U.F7   = as.numeric(as.character(utemp2$F7)))
 
-load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
 hy.temp = data.frame(subj     = as.factor(paste("0",alldata$MEG_ID, sep="")),
                      HY.stage = as.factor(alldata$HY_stage),
                      id       = alldata$ID)
@@ -103,15 +99,12 @@ udata2 <- merge(udata2, hy.temp, by=c("id"))
 udata2 <- subset(udata2, select=-c(id))
 udata <- rbind(udata1, udata2)
 
-## MERGE
+## Merge data frames
 clindata <- merge(sdata, udata, by.x="subj", by.y="subj")
 
 # SAVE
-save(clindata, file='X://PD_longrest//groupanalysis//clindata.Rdata')
-write.csv(clindata, file='X://PD_longrest//groupanalysis//clindata.csv')
-
-# (re)load
-load(file='X://PD_longrest//groupanalysis//clindata.Rdata')
+save(clindata, file='/home/mikkel/PD_longrest/groupanalysis/clindata.Rdata')
+write.csv(clindata, file='/home/mikkel/PD_longrest/groupanalysis/clindata.csv')
 
 ###########################################################################################
 # %%% IMPORT FS ROI STATS %%%
@@ -122,7 +115,7 @@ roi.thick <- data.frame(subj=sdata$subj,
 
 for (ii in 1:length(sdata$subj)){
   subj = sdata$subj[ii]
-  tmp.lh <- read_fs_table(paste('X://PD_longrest//meg_data//',subj,'//',subj,'.lh.sensmotor.stats', sep=""), head=FALSE)
+  tmp.lh <- read_fs_table(paste('/home/mikkel/PD_longrest/meg_data/',subj,'/',subj,'.lh.sensmotor.stats', sep=""), head=FALSE)
   roi.thick$thick[roi.thick$subj==subj] <- tmp.lh$V5
   rm(tmp.lh)
 }
@@ -130,31 +123,27 @@ for (ii in 1:length(sdata$subj)){
 roi.thick$hemi <- as.factor(roi.thick$hemi)
 
 # Save
-save(roi.thick, file='X://PD_longrest//groupanalysis//thickdata.Rdata')
-
-# Reload
-load(file='X://PD_longrest//groupanalysis//thickdata.Rdata')
+save(roi.thick, file='/home/mikkel/PD_longrest/groupanalysis/thickdata.Rdata')
 
 ###########################################################################################
 # %%% IMPORT PSD DATA %%%
 ###########################################################################################
 
-fooof.data <- read.csv('X://PD_longrest//groupanalysis//fooof_df2.csv', sep=";")
+fooof.data <- read.csv('/home/mikkel/PD_longrest/groupanalysis/fooof_df2.csv', sep=";")
 fooof.data$subj <- as.factor(paste("0",fooof.data$subj, sep=""))
 
 ###########################################################################################
 # %%% IMPORT N EVENT DATA %%%
 ###########################################################################################
 # Read N event data
-temp <- readMat("neve_u_m2_data2.mat")
+temp <- readMat("/home/mikkel/PD_longrest/groupanalysis/neve_u_m2_data2.mat")
 
 subj <- as.factor(unlist(temp$subjects))
 
-neve.data <- data.frame(nevent.u.m2=temp$nevent.u.m2,
-                        subj=subj)
+neve.data <- data.frame(nevent.u.m2=temp$nevent.u.m2, subj=subj)
 
 # Get data log and BPM
-data.log <- read.csv('X:\\PD_longrest\\groupanalysis\\data_log.csv', sep=";")
+data.log <- read.csv('/home/mikkel/PD_longrest/groupanalysis/data_log.csv', sep=";")
 data.log$subj <- as.factor(data.log$subj)
 data.log$subj <- paste("0",data.log$subj, sep="")
 
@@ -163,15 +152,12 @@ neve.data$data_length.min <- neve.data$data_length/60
 neve.data$nevent.u.m2.min <- round(neve.data$nevent.u.m2/neve.data$data_length.min)
 
 # Save
-save(ndata, file='X://PD_longrest//groupanalysis//neve.data.Rdata')
-
-# (re)load
-load(file='X://PD_longrest//groupanalysis//neve.data.Rdata')
+save(neve.data, file='/home/mikkel/PD_longrest/groupanalysis/neve.data.Rdata')
 
 ###########################################################################################
 # %%% LEDD and disease duration
 ###########################################################################################
-tmp <- read.xlsx('X:\\PD_long\\subj_data\\ptns_medication.xlsx', 1)
+tmp <- read.xlsx('/home/mikkel/PD_long/subj_data/ptns_medication.xlsx', 1)
 tmp$yr1 <- as.numeric(substr(tmp$DATE, start=2, stop=5))
 tmp$yr2 <- as.numeric(tmp$Initial_diagnosis)
 tmp$pd.dur <- tmp$yr1-tmp$yr2
@@ -179,8 +165,6 @@ tmp$pd.dur <- tmp$yr1-tmp$yr2
 tmp1.dat <- data.frame(subj=as.factor(paste('0',as.character(tmp$NATID), sep="")),
                        ledd=tmp$LEDD,
                        pd.dur=tmp$pd.dur)
-
-load(file='C://Users//Mikkel//Documents//betabursts//subj_data//alldata.RData')
 
 tmp2.dat <- data.frame(subj=as.factor(paste('0',as.character(alldata$MEG_ID), sep="")),
                        ledd=alldata$LEDD,
@@ -191,6 +175,12 @@ med.dat <- rbind(tmp1.dat, tmp2.dat)
 ###########################################################################################
 # %%% COLLECT ALL DATA INTO ONE %%%
 ###########################################################################################
+# (re)load data
+load(file='/home/mikkel/PD_longrest/groupanalysis/sdata.Rdata')
+load(file='/home/mikkel/PD_longrest/groupanalysis/clindata.Rdata')
+load(file='/home/mikkel/PD_longrest/groupanalysis/thickdata.Rdata')
+load(file='/home/mikkel/PD_longrest/groupanalysis/neve.data.Rdata')
+
 # Merge data frames
 ndata <- merge(neve.data, sdata, by="subj", all=TRUE)
 tmpdat1 <- merge(ndata, roi.thick, by=c("subj"), all=TRUE)
@@ -203,8 +193,7 @@ alldata$age.centerd <- alldata$age-mean(alldata$age)
 alldata$thick.centerd <- alldata$thick-mean(alldata$thick)
 alldata$thickz <- zscore(alldata$thick)
 
-save(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
-save(alldata, file='C://Users//Mikkel//Documents//PDbb2//groupanalysis//alldata_subj2.Rdata')
-write.csv(alldata, file='X://PD_longrest//groupanalysis//alldata_subj2.csv')
+save(alldata, file='/home/mikkel/PD_longrest/groupanalysis/alldata_subj2.Rdata')
+write.csv(alldata, file='/home/mikkel/PD_longrest/groupanalysis/alldata_subj2.csv')
 
 #END

@@ -1,7 +1,7 @@
 # .gitignore
 
 # Local folders
-figures/
+/figures/
 groupanalysis/
 log/
 meg_data/
@@ -13,3 +13,7 @@ output/
 
 # Misc files
 *sandbox*
+*outtakes*
+
+# Extensions
+*~

@@ -35,6 +35,7 @@ for ii, subj in enumerate(alldata.subj):
     
 #%% Split by group
 freqs = all_freqs[1,:]
+
 psd_ctrl = all_psd[alldata['group']=='control']
 psd_ptns = all_psd[alldata['group']=='patient']
 psd_ctrl_avg = np.mean(psd_ctrl, axis=0)
@@ -43,6 +44,7 @@ psd_ptns_avg = np.mean(psd_ptns, axis=0)
 psd_ctrl_sem = 1.96*np.std(psd_ctrl, axis=0)/np.sqrt(len(psd_ctrl))
 psd_ptns_sem = 1.96*np.std(psd_ptns, axis=0)/np.sqrt(len(psd_ptns))
 
+# Plot with log-power
 plt.plot(freqs, np.log(psd_ptns_avg), 'b')
 plt.fill_between(freqs, np.log(psd_ptns_avg-psd_ptns_sem), np.log(psd_ptns_avg+psd_ptns_sem), color='b', alpha=.1)
 plt.plot(freqs, np.log(psd_ctrl_avg), 'r')
@@ -52,3 +54,17 @@ plt.xlabel("Frequency (Hz)", size = 16)
 plt.ylabel("Log-power", size = 16)
 
 plt.savefig('/home/mikkel/PD_longrest/figures/psd_by group.jpg', dpi=600)
+
+# Plot with power
+plt.figure()
+plt.plot(freqs, psd_ptns_avg, 'b')
+plt.plot(freqs, psd_ctrl_avg, 'r')
+plt.fill_between(freqs, psd_ptns_avg-psd_ptns_sem, psd_ptns_avg+psd_ptns_sem, color='b', alpha=.1)
+plt.fill_between(freqs, psd_ctrl_avg-psd_ctrl_sem, psd_ctrl_avg+psd_ctrl_sem, color='r', alpha=.1)
+plt.legend(['PD','HC'], fontsize = 14)
+plt.xlabel("Frequency (Hz)", size = 16)
+plt.ylabel("Power (a.u)", size = 16)
+plt.ylim(0,0.07)
+plt.xlim(0, 35)
+
+plt.savefig('/home/mikkel/PD_longrest/figures/psd_by group2.jpg', dpi=800)

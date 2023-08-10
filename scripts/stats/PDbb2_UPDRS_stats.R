@@ -1,22 +1,24 @@
-# UPDRS stats: anakysis of sensorimotor feature on MDS-UPDRS-III score deviden into factors.
+# UPDRS stats: analysis of sensorimotor signal feature on MDS-UPDRS-III score divided into factors.
 #
-# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., 
-#  Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor 
-#  rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease [Preprint]. 
-#  medRxiv.org https://doi.org/10.1101/2021.06.27.21259592
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, 
+#   M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical 
+#   sensorimotor rhythms are uniquely linked to the severity of specific symptoms in 
+#   Parkinson's disease [Preprint]. medRxiv.org https://doi.org/10.1101/2021.06.27.21259592
 #
 
 library(arm)
 library(lmtest)
 library(bayestestR)
-source('X://PD_longrest//scripts//functions//zscore.R')
+library(car)
+library(brms)
+source('/home/mikkel/PD_longrest/scripts/functions/zscore.R')
 
 # Load data
-wrkdir <- "X://PD_longrest//groupanalysis"
-outdir <- 'X://PD_longrest//output'
+wrkdir <- '/home/mikkel/PD_longrest/groupanalysis'
+outdir <- '/home/mikkel/PD_longrest/output'
 setwd(wrkdir)
-load(file='X://PD_longrest//groupanalysis//alldata_subj2.Rdata')
-load(file='X://PD_longrest//groupanalysis//bbdata2.Rdata')
+load(file='alldata_subj2.Rdata')
+load(file='bbdata2.Rdata')
 
 # Prepare data
 bbsum <- aggregate(cbind(leneve, tueeve, maxeve)~subj, data=bbdata, FUN=median)
@@ -50,13 +52,19 @@ pd.data$U.F3z  <- zscore(pd.data$U.F3)
 pd.data$U.F45z <- zscore(pd.data$U.F45)
 pd.data$U.F6z  <- zscore(pd.data$U.F6)
 pd.data$U.F7z  <- zscore(pd.data$U.F7)
+pd.data$pd.durz  <- zscore(pd.data$pd.dur)
 
 ######################################################################################
 # MDS-UPDRS-III Factor 1
 F1mod.x <- lm(U.F1z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
-                 a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
-                 age.centerd + sex + thickz, 
-               data=pd.data)
+                a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
+                age.centerd + sex + thickz, 
+              data=pd.data)
+
+F1mod.x <- brm(U.F1z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
+                a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
+                age.centerd + sex + thickz, 
+              data=pd.data, save_pars = save_pars(all = TRUE))
 
 qqnorm(resid(F1mod.x))
 qqline(resid(F1mod.x))
@@ -262,65 +270,78 @@ sums <- cbind(x1[,1], x2)
 sums
 
 ######################################################################################
-# MDS-UPDRS-III Factor 4+5 combined
+## MDS-UPDRS-III Factor 4+5 combined
+# ML model
 F45mod.x <- lm(U.F45z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
                  a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
-                 age.centerd + sex + thickz, 
+                 age.centerd + sex + thickz  + pd.durz, 
               data=pd.data)
 
 qqnorm(resid(F45mod.x))
 qqline(resid(F45mod.x))
 
-F45mod.neve <- update(F45mod.x, .~. -nevent.u.m2.minz)
+# brms model
+F45mod.x <- brm(U.F45z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
+                 a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
+                 age.centerd + sex + thickz + pd.durz, 
+               data=pd.data, save_pars = save_pars(all = TRUE), iter=20000, cores=4)
+
+summary(F45mod.x)
+
+F45mod.neve <- update(F45mod.x, .~. -nevent.u.m2.minz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.neve)
 lrtest(F45mod.x, F45mod.neve)
 
-F45mod.leneve <- update(F45mod.x, ~. -lenevez)
+F45mod.leneve <- update(F45mod.x, ~. -lenevez, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.leneve)
 lrtest(F45mod.x, F45mod.leneve)
 
-F45mod.tueeve <- update(F45mod.x, ~. -tueevez)
+F45mod.tueeve <- update(F45mod.x, ~. -tueevez, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.tueeve)
 lrtest(F45mod.x, F45mod.tueeve)
 
-F45mod.maxeve <- update(F45mod.x, ~. -maxevez)
+F45mod.maxeve <- update(F45mod.x, ~. -maxevez, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.maxeve)
 lrtest(F45mod.x, F45mod.maxeve)
 
-F45mod.intcpt <- update(F45mod.x, ~. -a_interceptz)
+F45mod.intcpt <- update(F45mod.x, ~. -a_interceptz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.intcpt)
 lrtest(F45mod.x, F45mod.intcpt)
 
-F45mod.slope <- update(F45mod.x, ~. -a_slopez)
+F45mod.slope <- update(F45mod.x, ~. -a_slopez, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.slope)
 lrtest(F45mod.x, F45mod.slope)
 
-F45mod.alpapw <- update(F45mod.x, ~. -alpha_pwz)
+F45mod.alpapw <- update(F45mod.x, ~. -alpha_pwz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.alpapw)
 lrtest(F45mod.x, F45mod.alpapw)
 
-F45mod.alpacf <- update(F45mod.x, ~. -alpha_cfz)
+F45mod.alpacf <- update(F45mod.x, ~. -alpha_cfz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.alpacf)
 lrtest(F45mod.x, F45mod.alpacf)
 
-F45mod.betapw <- update(F45mod.x, ~. -beta_pwz)
+F45mod.betapw <- update(F45mod.x, ~. -beta_pwz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.betapw)
 lrtest(F45mod.x, F45mod.betapw)
 
-F45mod.betacf <- update(F45mod.x, ~. -beta_cfz)
+F45mod.betacf <- update(F45mod.x, ~. -beta_cfz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.betacf)
 lrtest(F45mod.x, F45mod.betacf)
 
-F45mod.age <- update(F45mod.x, ~. -age.centerd)
+F45mod.age <- update(F45mod.x, ~. -age.centerd, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.age)
 lrtest(F45mod.x, F45mod.age)
 
-F45mod.sex <- update(F45mod.x, ~. -sex)
+F45mod.sex <- update(F45mod.x, ~. -sex, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.sex)
 lrtest(F45mod.x, F45mod.sex)
 
-F45mod.thick <- update(F45mod.x, ~. -thickz)
+F45mod.thick <- update(F45mod.x, ~. -thickz, cores=4)
 bayesfactor_models(F45mod.x, denominator = F45mod.thick)
+lrtest(F45mod.x, F45mod.thick)
+
+F45mod.dur <- update(F45mod.x, ~. -pd.dur, cores=4)
+bayesfactor_models(F45mod.x, denominator = F45mod.dur)
 lrtest(F45mod.x, F45mod.thick)
 
 # SUMMARY
@@ -328,13 +349,13 @@ mod45.sim <- sim(F45mod.x, n.sims=1000)
 x1 <- coef(F45mod.x)
 x2 <- t(apply(coef(mod45.sim), 2, quantile, c(0.025, 0.975)))
 sums <- cbind(x1, x2)
-sums
+round(sums, digits=3)
 
 ######################################################################################
 # MDS-UPDRS-III Factor 6
 F6mod.x <- lm(U.F6z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
                 a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
-                age.centerd + sex + thickz, 
+                age.centerd + sex + thickz + pd.dur, 
               data=pd.data)
 
 qqnorm(resid(F6mod.x))

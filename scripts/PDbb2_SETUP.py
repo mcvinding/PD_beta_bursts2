@@ -10,50 +10,29 @@ Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingva
 import csv
 import os.path as op
 import sys
+import pandas as pd
 
 #%% Paths
 if sys.platform == 'linux':
     raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
     old_raw_path    = '/archive/20055_parkinson_motor/MEG'
     meg_path        = '/home/mikkel/PD_longrest/meg_data'
-#    trans_path      = '/home/mikkel/PD_long/trans_files'           # !! Files are in subj_folder
-    # old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
     fs_subjects_dir = '/home/mikkel/PD_long/fs_subjects_dir'
     subj_data_path  = '/home/mikkel/PD_long/subj_data/'
     grp_data_path   = '/home/mikkel/PD_longrest/groupanalysis'
 else:
-#    raw_path        = '/archive/20079_parkinsons_longitudinal/MEG/'
-#    old_raw_path    = '/archive/20055_parkinson_motor/MEG'
     meg_path        = 'X:\\PD_longrest\\script\\meg_data'
-#    trans_path      = 'X:\\PD_longrest\\script\\trans_files'
-    # old_trans_path  = '/home/mikkel/PD_motor/tap/trans_files'
     fs_subjects_dir = 'X:\\PD_long\\fs_subjects_dir'
     subj_data_path  = 'X:\\PD_long\\subj_data'
 
 #%% Read subjects
 subj_file = op.join(subj_data_path, 'subjects_and_dates.csv')
 
-with open(subj_file, newline='') as csvfile:
-    tmp = csv.reader(csvfile, delimiter=';', quotechar='"')
-    subjid = []
-    date = []
-    is_bb = []
-    for ii, row in enumerate(tmp):
-        subjid.append(row[1])
-        date.append(row[2])
-        is_bb.append(row[3])
-        
-is_bb = [x == '1' for x in is_bb]
-tt = [x == '' for x in date]
-idxer = [a and not b for a, b in zip(is_bb, tt)]
-    
-subjid_flt = [i for (i, v) in zip(subjid, idxer) if v]
-subjid_flt = ['0'+s for s in subjid_flt]
-
-date_flt = [i for (i, v) in zip(date, idxer) if v]
-
-subjects_and_dates = [op.join('NatMEG_'+s, d) for (s, d) in zip(subjid_flt, date_flt)]
-subjects = subjid_flt.copy()
+tmp = pd.read_csv(subj_file)      
+is_bb = [x == 1 for x in tmp['rest_ec']]
+tmp['id'] = ['0'+str(s) for s in tmp['id']]
+subjects_and_dates = [op.join('NatMEG_'+s, str(d)) for (s, d) in zip(tmp['id'][is_bb], tmp['date'][is_bb])]
+subjects = list(tmp['id'][is_bb])
 
 old_subjs = ['0313',
              '0314',
@@ -96,14 +75,8 @@ exceptions = {
 
 #%% Grouping
 data_file = op.join(grp_data_path, 'alldata_subj2.csv')
-
-with open(data_file, newline='') as csvfile:
-    tmp = csv.reader(csvfile, delimiter=',', quotechar='"')
-    group = []
-    for ii, row in enumerate(tmp):
-        group.append(row[10])
-
-group = group[1:]
+tmp2 = pd.read_csv(data_file)
+group = tmp2['group']
 
 #%% Settings
 spacing = 'ico4'

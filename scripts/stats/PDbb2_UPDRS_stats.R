@@ -46,6 +46,8 @@ pd.data$a_interceptz <-zscore(pd.data$a_intercept)
 pd.data$a_slopez <- zscore(pd.data$a_slope)
 pd.data$alpha_cfz <- zscore(pd.data$alpha_cf)
 pd.data$beta_cfz <- zscore(pd.data$beta_cf)
+pd.data$pd.durz  <- zscore(pd.data$pd.dur)
+pd.data$leddz <- zscore(pd.data$ledd)
 pd.data$U.F1z  <- zscore(pd.data$U.F1)
 pd.data$U.F2z  <- zscore(pd.data$U.F2)
 pd.data$U.F3z  <- zscore(pd.data$U.F3)
@@ -54,6 +56,77 @@ pd.data$U.F6z  <- zscore(pd.data$U.F6)
 pd.data$U.F7z  <- zscore(pd.data$U.F7)
 pd.data$pd.durz  <- zscore(pd.data$pd.dur)
 
+######################################################################################
+# total MDS-UPDRS III 
+
+Fmod.x <- lm(UPDRSz ~ nevent.u.m2.minz +lenevez + tueevez + maxevez 
+             +a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+ 
+             age.centerd + sex + thickz + leddz + pd.durz, 
+              data=pd.data)
+
+summary(Fmod.x)
+as.data.frame(vif(Fmod.x))
+qqnorm(resid(F1mod.x))
+qqline(resid(F1mod.x))
+
+Fmod.x <- brm(UPDRSz ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +
+                 a_interceptz + a_slopez + alpha_pwz + alpha_cfz + beta_pwz + beta_cfz+
+                 age.centerd + sex + thickz + leddz + pd.durz, 
+               data=pd.data, save_pars = save_pars(all = TRUE))
+
+# Sig tests
+Fmod.neve <- update(Fmod.x, ~. -nevent.u.m2.minz)
+bf.neve <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.neve))
+#lrtest(Fmod.neve, Fmod.x)
+Fmod.leneve <- update(Fmod.x, ~. -lenevez)
+bf.leneve <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.leneve))
+#lrtest(Fmod.leneve, Fmod.x)
+Fmod.tueeve <- update(Fmod.x, ~. -tueevez)
+bf.tueeve <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.tueeve))
+#lrtest(Fmod.tueeve, Fmod.x)
+Fmod.maxeve <- update(Fmod.x, ~. -maxevez)
+bf.maxeve <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.maxeve))
+#lrtest(Fmod.maxeve, Fmod.x)
+Fmod.intcpt <- update(Fmod.x, ~. -a_interceptz)
+bf.intcpt <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.intcpt))
+#lrtest(Fmod.intcpt, Fmod.x)
+Fmod.slope <- update(Fmod.x, ~. -a_slopez)
+bf.slope <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.slope))
+#lrtest(Fmod.slope, Fmod.x)
+Fmod.alpapw <- update(Fmod.x, ~. -alpha_pwz)
+bf.alpapw <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.alpapw))
+#lrtest(Fmod.x, Fmod.alpapw)
+Fmod.alpacf <- update(Fmod.x, ~. -alpha_cfz)
+bf.alpacf<- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.alpacf))
+#lrtest(Fmod.x, Fmod.alpacf)
+Fmod.betapw <- update(Fmod.x, ~. -beta_pwz)
+bf.betapw <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.betapw))
+#lrtest(Fmod.x, Fmod.betapw)
+Fmod.betacf <- update(Fmod.x, ~. -beta_cfz)
+bf.betacf <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.betacf))
+#lrtest(Fmod.x, Fmod.betacf)
+Fmod.age <- update(Fmod.x, ~. -age.centerd)
+bf.age <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.age))
+#lrtest(Fmod.x, Fmod.age)
+Fmod.sex <- update(Fmod.x, ~. -sex)
+bf.sex <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.sex))
+#lrtest(Fmod.x, Fmod.sex)
+Fmod.thick <- update(Fmod.x, ~. -thickz)
+bf.thick <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.thick))
+#lrtest(Fmod.x, Fmod.thick)
+Fmod.dur <- update(Fmod.x, ~. -pd.durz)
+bf.dur<- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.dur))
+#lrtest(Fmod.x, Fmod.dur)
+Fmod.ledd <- update(Fmod.x, ~. -leddz)
+bf.ledd <- as.numeric(bayesfactor_models(Fmod.x, denominator = Fmod.ledd))
+#lrtest(Fmod.x, Fmod.ledd)
+
+# SUMMARY
+#mod.sim <- sim(Fmod.x, n.sims=1000)
+#x1 <- coef(Fmod.x)
+#x2 <- t(apply(coef(mod.sim), 2, quantile, c(0.025, 0.975)))
+#sums <- cbind(x1, x2)
+#sums
 ######################################################################################
 # MDS-UPDRS-III Factor 1
 F1mod.x <- lm(U.F1z ~ nevent.u.m2.minz + lenevez + tueevez + maxevez +

@@ -434,4 +434,185 @@ max.tst$hypothesis$Post.Prob2
 
 rm(list = ls(pattern = "^maxmod"))
 
+######################################################################################
+# UNFILTERED Beta power (without 1/f-removal)
+load(file='all_rawbetapw_mod.RData')
+load(file='mod_rawbetapw_2.RData')
+
+# Model summary
+fixef(raw_beta_pw.mod)
+summary(raw_beta_pw.mod)
+
+# ## BF test
+bf.G <- as.numeric(bayesfactor_models(raw_beta_pw.G, denominator   = raw_beta_pw.0))
+bf.A <- as.numeric(bayesfactor_models(raw_beta_pw.A, denominator   = raw_beta_pw.G))
+bf.S <- as.numeric(bayesfactor_models(raw_beta_pw.S, denominator   = raw_beta_pw.A))
+bf.T <- as.numeric(bayesfactor_models(raw_beta_pw.T, denominator   = raw_beta_pw.S))
+bf.A2 <- as.numeric(bayesfactor_models(raw_beta_pw.A2, denominator  = raw_beta_pw.T))
+bf.GA <- as.numeric(bayesfactor_models(raw_beta_pw.GA, denominator  = raw_beta_pw.A2))
+bf.GS <- as.numeric(bayesfactor_models(raw_beta_pw.GS, denominator  = raw_beta_pw.GA))
+bf.GT <- as.numeric(bayesfactor_models(raw_beta_pw.GT, denominator  = raw_beta_pw.GS))
+bf.SA <- as.numeric(bayesfactor_models(raw_beta_pw.SA, denominator  = raw_beta_pw.GT))
+bf.AT <- as.numeric(bayesfactor_models(raw_beta_pw.AT, denominator  = raw_beta_pw.SA))
+bf.ST <- as.numeric(bayesfactor_models(raw_beta_pw.ST, denominator  = raw_beta_pw.AT))
+# bayesfactor_models(beta_pw.GAS, denominator = beta_pw.ST)
+# bayesfactor_models(beta_pw.GAT, denominator = beta_pw.GAS)
+# bayesfactor_models(beta_pw.GST, denominator = beta_pw.GAT)
+# bayesfactor_models(beta_pw.AST, denominator = beta_pw.GAT)
+
+# Hypothesis testing
+raw_beta_pw.tst <- hypothesis(raw_beta_pw.mod  , c("grouppatient>0",
+                                           "age.centerd>0",
+                                           "sexM<0",
+                                           "thickz<0",
+                                           "Iage.centerdE2>0",
+                                           "grouppatient:age.centerd<0",
+                                           "grouppatient:sexM>0",
+                                           "grouppatient:thickz>0",
+                                           "age.centerd:sexM<0",
+                                           "age.centerd:thickz>0",
+                                           "sexM:thickz>0"), alpha=0.05)
+raw_beta_pw.tst$hypothesis$Post.Prob2 <- ifelse(raw_beta_pw.tst$hypothesis$Post.Prob>0.5, (1-raw_beta_pw.tst$hypothesis$Post.Prob)*2, raw_beta_pw.tst$hypothesis$Post.Prob*2)
+raw_beta_pw.tst$hypothesis$Post.Prob2
+
+raw_beta_pw_bf <- data.frame(bf.G, bf.A, bf.S, bf.T, bf.A2, bf.GA, bf.GS, bf.GT, bf.SA, bf.AT, bf.ST)
+raw_beta_pw_bf 
+rm(list = ls(pattern = "^raw_beta_pw"))
+
+######################################################################################
+# UNFILTERED Beta peak freq
+load(file='all_rawbetacf_mod.RData')
+load(file='mod_rawbetacf_2.RData')
+
+# Model summary
+fixef(raw_beta_cf.mod)
+summary(raw_beta_cf.mod)
+
+# ## BF test
+bf.G <- as.numeric(bayesfactor_models(raw_beta_cf.G, denominator   = raw_beta_cf.0))
+bf.A <- as.numeric(bayesfactor_models(raw_beta_cf.A, denominator   = raw_beta_cf.G))
+bf.S <- as.numeric(bayesfactor_models(raw_beta_cf.S, denominator   = raw_beta_cf.A))
+bf.T <- as.numeric(bayesfactor_models(raw_beta_cf.T, denominator   = raw_beta_cf.S))
+bf.A2 <- as.numeric(bayesfactor_models(raw_beta_cf.A2, denominator  = raw_beta_cf.T))
+bf.GA <- as.numeric(bayesfactor_models(raw_beta_cf.GA, denominator  = raw_beta_cf.A2))
+bf.GS <- as.numeric(bayesfactor_models(raw_beta_cf.GS, denominator  = raw_beta_cf.GA))
+bf.GT <- as.numeric(bayesfactor_models(raw_beta_cf.GT, denominator  = raw_beta_cf.GS))
+bf.SA <- as.numeric(bayesfactor_models(raw_beta_cf.SA, denominator  = raw_beta_cf.GT))
+bf.AT <- as.numeric(bayesfactor_models(raw_beta_cf.AT, denominator  = raw_beta_cf.SA))
+bf.ST <- as.numeric(bayesfactor_models(raw_beta_cf.ST, denominator  = raw_beta_cf.AT))
+# bayesfactor_models(beta_cf.GAS, denominator = beta_cf.ST)
+# bayesfactor_models(beta_cf.GAT, denominator = beta_cf.GAS)
+# bayesfactor_models(beta_cf.GST, denominator = beta_cf.GAT)
+# bayesfactor_models(beta_cf.AST, denominator = beta_cf.GAT)
+
+# Hypothesis testing
+raw_beta_cf.tst <- hypothesis(raw_beta_cf.mod  , c("grouppatient>0",
+                                                   "age.centerd>0",
+                                                   "sexM<0",
+                                                   "thickz<0",
+                                                   "Iage.centerdE2>0",
+                                                   "grouppatient:age.centerd<0",
+                                                   "grouppatient:sexM>0",
+                                                   "grouppatient:thickz>0",
+                                                   "age.centerd:sexM<0",
+                                                   "age.centerd:thickz>0",
+                                                   "sexM:thickz>0"), alpha=0.05)
+raw_beta_cf.tst$hypothesis$Post.Prob2 <- ifelse(raw_beta_cf.tst$hypothesis$Post.Prob>0.5, (1-raw_beta_cf.tst$hypothesis$Post.Prob)*2, raw_beta_cf.tst$hypothesis$Post.Prob*2)
+raw_beta_cf.tst$hypothesis$Post.Prob2
+
+raw_beta_cf_bf <- data.frame(bf.G, bf.A, bf.S, bf.T, bf.A2, bf.GA, bf.GS, bf.GT, bf.SA, bf.AT, bf.ST)
+raw_beta_cf_bf 
+
+rm(list = ls(pattern = "^beta_cf"))
+
+######################################################################################
+# UNFILTERED Alpha power
+load(file='all_rawalphapw_mod.RData')
+load(file='mod_rawalphapw_2.RData')
+
+# Model summary
+fixef(raw_alpha_pw.mod)
+summary(raw_alpha_pw.mod)
+
+# ## BF test
+bf.G <- as.numeric(bayesfactor_models(raw_alpha_pw.G, denominator   = raw_alpha_pw.0))
+bf.A <- as.numeric(bayesfactor_models(raw_alpha_pw.A, denominator   = raw_alpha_pw.G))
+bf.S <- as.numeric(bayesfactor_models(raw_alpha_pw.S, denominator   = raw_alpha_pw.A))
+bf.T <- as.numeric(bayesfactor_models(raw_alpha_pw.T, denominator   = raw_alpha_pw.S))
+bf.A2 <- as.numeric(bayesfactor_models(raw_alpha_pw.A2, denominator  = raw_alpha_pw.T))
+bf.GA <- as.numeric(bayesfactor_models(raw_alpha_pw.GA, denominator  = raw_alpha_pw.A2))
+bf.GS <- as.numeric(bayesfactor_models(raw_alpha_pw.GS, denominator  = raw_alpha_pw.GA))
+bf.GT <- as.numeric(bayesfactor_models(raw_alpha_pw.GT, denominator  = raw_alpha_pw.GS))
+bf.SA <- as.numeric(bayesfactor_models(raw_alpha_pw.SA, denominator  = raw_alpha_pw.GT))
+bf.AT <- as.numeric(bayesfactor_models(raw_alpha_pw.AT, denominator  = raw_alpha_pw.SA))
+bf.ST <- as.numeric(bayesfactor_models(raw_alpha_pw.ST, denominator  = raw_alpha_pw.AT))
+# bayesfactor_models(alpha_pw.GAS, denominator = alpha_pw.ST)
+# bayesfactor_models(alpha_pw.GAT, denominator = alpha_pw.GAS)
+# bayesfactor_models(alpha_pw.GST, denominator = alpha_pw.GAT)
+# bayesfactor_models(alpha_pw.AST, denominator = alpha_pw.GAT)
+
+# Hypothesis testing
+raw_alpha_pw.tst <- hypothesis(raw_alpha_pw.mod  , c("grouppatient>0",
+                                                   "age.centerd>0",
+                                                   "sexM<0",
+                                                   "thickz<0",
+                                                   "Iage.centerdE2>0",
+                                                   "grouppatient:age.centerd<0",
+                                                   "grouppatient:sexM>0",
+                                                   "grouppatient:thickz>0",
+                                                   "age.centerd:sexM<0",
+                                                   "age.centerd:thickz>0",
+                                                   "sexM:thickz>0"), alpha=0.05)
+raw_alpha_pw.tst$hypothesis$Post.Prob2 <- ifelse(raw_alpha_pw.tst$hypothesis$Post.Prob>0.5, (1-raw_alpha_pw.tst$hypothesis$Post.Prob)*2, raw_alpha_pw.tst$hypothesis$Post.Prob*2)
+raw_alpha_pw.tst$hypothesis$Post.Prob2
+
+raw_alpha_pw_bf <- data.frame(bf.G, bf.A, bf.S, bf.T, bf.A2, bf.GA, bf.GS, bf.GT, bf.SA, bf.AT, bf.ST)
+raw_alpha_pw_bf 
+rm(list = ls(pattern = "^raw_alpha_pw"))
+
+######################################################################################
+# UNFILTERED alpha peak freq
+load(file='all_rawalphacf_mod.RData')
+load(file='mod_rawalphacf_2.RData')
+
+# Model summary
+fixef(raw_alpha_cf.mod)
+summary(raw_alpha_cf.mod)
+
+# ## BF test
+bf.G <- as.numeric(bayesfactor_models(raw_alpha_cf.G, denominator   = raw_alpha_cf.0))
+bf.A <- as.numeric(bayesfactor_models(raw_alpha_cf.A, denominator   = raw_alpha_cf.G))
+bf.S <- as.numeric(bayesfactor_models(raw_alpha_cf.S, denominator   = raw_alpha_cf.A))
+bf.T <- as.numeric(bayesfactor_models(raw_alpha_cf.T, denominator   = raw_alpha_cf.S))
+bf.A2 <- as.numeric(bayesfactor_models(raw_alpha_cf.A2, denominator  = raw_alpha_cf.T))
+bf.GA <- as.numeric(bayesfactor_models(raw_alpha_cf.GA, denominator  = raw_alpha_cf.A2))
+bf.GS <- as.numeric(bayesfactor_models(raw_alpha_cf.GS, denominator  = raw_alpha_cf.GA))
+bf.GT <- as.numeric(bayesfactor_models(raw_alpha_cf.GT, denominator  = raw_alpha_cf.GS))
+bf.SA <- as.numeric(bayesfactor_models(raw_alpha_cf.SA, denominator  = raw_alpha_cf.GT))
+bf.AT <- as.numeric(bayesfactor_models(raw_alpha_cf.AT, denominator  = raw_alpha_cf.SA))
+bf.ST <- as.numeric(bayesfactor_models(raw_alpha_cf.ST, denominator  = raw_alpha_cf.AT))
+# bayesfactor_models(alpha_cf.GAS, denominator = alpha_cf.ST)
+# bayesfactor_models(alpha_cf.GAT, denominator = alpha_cf.GAS)
+# bayesfactor_models(alpha_cf.GST, denominator = alpha_cf.GAT)
+# bayesfactor_models(alpha_cf.AST, denominator = alpha_cf.GAT)
+
+# Hypothesis testing
+raw_alpha_cf.tst <- hypothesis(raw_alpha_cf.mod  , c("grouppatient>0",
+                                                   "age.centerd>0",
+                                                   "sexM<0",
+                                                   "thickz<0",
+                                                   "Iage.centerdE2>0",
+                                                   "grouppatient:age.centerd<0",
+                                                   "grouppatient:sexM>0",
+                                                   "grouppatient:thickz>0",
+                                                   "age.centerd:sexM<0",
+                                                   "age.centerd:thickz>0",
+                                                   "sexM:thickz>0"), alpha=0.05)
+raw_alpha_cf.tst$hypothesis$Post.Prob2 <- ifelse(raw_alpha_cf.tst$hypothesis$Post.Prob>0.5, (1-raw_alpha_cf.tst$hypothesis$Post.Prob)*2, raw_alpha_cf.tst$hypothesis$Post.Prob*2)
+raw_alpha_cf.tst$hypothesis$Post.Prob2
+
+raw_alpha_cf_bf <- data.frame(bf.G, bf.A, bf.S, bf.T, bf.A2, bf.GA, bf.GS, bf.GT, bf.SA, bf.AT, bf.ST)
+raw_alpha_cf_bf 
+
+rm(list = ls(pattern = "^alpha_cf"))
 #END

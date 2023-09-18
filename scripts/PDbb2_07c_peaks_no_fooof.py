@@ -57,7 +57,7 @@ for subj in subj_folders:
     summary_subj = [subj,raw_alpha_cf, raw_alpha_pw, raw_beta_cf, raw_beta_pw]
     summary_all.append(summary_subj)
 
-output = '/home/joswal/pd_longitudinal/subj_data/peak_cf_pw_no_fooof.csv'
+output = '/home/joswal/pd_longitudinal/subj_data/peaks_no_fooof.csv'
 with open(output, 'w', ) as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
         for word in summary_all:

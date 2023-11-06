@@ -57,6 +57,12 @@ finter.tst <- hypothesis(finter.mod  , c("grouppatient>0",
 finter.tst$hypothesis$Post.Prob2 <- ifelse(finter.tst$hypothesis$Post.Prob>0.5, (1-finter.tst$hypothesis$Post.Prob)*2, finter.tst$hypothesis$Post.Prob*2)
 finter.tst$hypothesis$Post.Prob2
 
+# Qualitative
+sim <- posterior_samples(finter.mod, "^b")
+x1 <- colMeans(sim, na.rm = TRUE)
+c(x1[2]/x1[1]*100,
+  quantile(sim[,2]/sim[,1]*100, c(0.025, 0.975)))
+
 rm(list = ls(pattern = "^finter"))
 
 ######################################################################################
@@ -99,6 +105,12 @@ fslope.tst <- hypothesis(fslope.mod  , c("grouppatient>0",
                                          "sexM:thickz>0"), alpha=0.05)
 fslope.tst$hypothesis$Post.Prob2 <- ifelse(fslope.tst$hypothesis$Post.Prob>0.5, (1-fslope.tst$hypothesis$Post.Prob)*2, fslope.tst$hypothesis$Post.Prob*2)
 fslope.tst$hypothesis$Post.Prob2
+
+# Qualitative
+sim <- posterior_samples(fslope.mod, "^b")
+x1 <- colMeans(sim, na.rm = TRUE)
+c(x1[2]/x1[1]*100,
+  quantile(sim[,2]/sim[,1]*100, c(0.025, 0.975)))
 
 rm(list = ls(pattern = "^fslope"))
 
@@ -315,6 +327,22 @@ neve.tst <- hypothesis(mod_neve, c("grouppatient>0",
 neve.tst$hypothesis$Post.Prob2 <- ifelse(neve.tst$hypothesis$Post.Prob>0.5, (1-neve.tst$hypothesis$Post.Prob)*2, neve.tst$hypothesis$Post.Prob*2)
 neve.tst$hypothesis$Post.Prob2
 
+# Qualitative
+sim <- posterior_samples(mod_neve, "^b")
+x1 <- colMeans(sim, na.rm = TRUE)
+# Ctrl x age : female
+c(exp(x1[3])*100-100,
+  quantile(exp(sim[,3])*100-100, c(0.025, 0.975)))
+# Ctrl x age : male
+c(exp(x1[3]+x1[10])*100-100,
+  quantile(exp(sim[,3]+sim[,10])*100-100, c(0.025, 0.975)))
+# Ptns x age : female
+c(exp(x1[3]+x1[7])*100-100,
+  quantile(exp(sim[,3]+sim[,7])*100-100, c(0.025, 0.975)))
+# Ptns x age : male
+c(exp(x1[3]+x1[7]+x1[10])*100-100,
+  quantile(exp(sim[,3]+sim[,7]+sim[,10])*100-100, c(0.025, 0.975)))
+
 rm(list = ls(pattern = "^mod.neve"))
 
 # ##############################################################################
@@ -431,6 +459,28 @@ max.tst <- hypothesis(maxmod, c("grouppatient>0",
                                 "sexM:thickz>0"), alpha=0.05)
 max.tst$hypothesis$Post.Prob2 <- ifelse(max.tst$hypothesis$Post.Prob>0.5, (1-max.tst$hypothesis$Post.Prob)*2, max.tst$hypothesis$Post.Prob*2)
 max.tst$hypothesis$Post.Prob2
+
+hypothesis(maxmod, c("grouppatient+grouppatient:sexM>0"))
+hypothesis(maxmod, c("sexM>0"))
+hypothesis(maxmod, c("sexM+grouppatient:sexM>0"))
+hypothesis(maxmod, c("sexM+grouppatient:sexM<0"))
+
+# Qualitative
+sim <- posterior_samples(maxmod, "^b")
+x1 <- colMeans(sim, na.rm = TRUE)
+
+# Ptns male > Ctrl male
+c(exp(x1[2]+x1[8])*100-100,
+  quantile(exp(sim[,2]+sim[,8])*100-100, c(0.025, 0.975)))
+# ctrl male > Ctrl female
+c(exp(x1[4])*100-100,
+  quantile(exp(sim[,4])*100-100, c(0.025, 0.975)))
+# ptns male > ptns female
+c(exp(x1[4]+x1[8])*100-100,
+  quantile(exp(sim[,4]+sim[,8])*100-100, c(0.025, 0.975)))
+# ptns female > ctrl female
+c(exp(x1[2])*100-100,
+  quantile(exp(sim[,2])*100-100, c(0.025, 0.975)))
 
 rm(list = ls(pattern = "^maxmod"))
 

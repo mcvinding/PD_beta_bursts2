@@ -7,13 +7,14 @@ log/
 meg_data/
 old/
 output/
+*sandbox*
+*outtakes*
 
 # Pycache
 *__pycache__
 
 # Misc files
-*sandbox*
-*outtakes*
+*.Rhistory
 
 # Extensions
 *~

@@ -14,6 +14,7 @@ library(plyr)
 setwd('~/PD_longrest/output')
 load(file='/home/mikkel/PD_longrest/groupanalysis/bbdata2.Rdata')
 
+################################################################################
 # Variable names
 a.labels <- c("Group", "Age", "Sex", "Cortical thickness", "Age^2",
               "Group:Age", "Group:Sex", "Group:Cortical thickness", "Age:Sex", "Age:Cortical thickness", "Sex:Cortical thickness")
@@ -21,6 +22,7 @@ a.labels <- c("Group", "Age", "Sex", "Cortical thickness", "Age^2",
 
 a.labels <- rev(a.labels)
 
+# de-center age
 age.convert <- function(x) {
   lab = round(x + mean(bbdata$age))
   return(lab)
@@ -30,6 +32,12 @@ age.convert <- function(x) {
 #   lab = round(x + mean(bbdata$thick))
 #   return(lab)
 # }
+
+dpi <- 600
+p1.h <- 50
+p1.w <- 40
+p2.h <- 40
+p2.w <- 50
 
 ################################################################################
 # 1/f intercept
@@ -55,53 +63,52 @@ plt.finter <- plot_model(finter.mod,
 ) 
 plt.finter <- plt.finter + scale_y_continuous(limits=c(-0.5, 0.5)) + theme_bw()
 plt.finter
-ggsave("modplt_finter.png", plt.finter, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_finter.png", plt.finter, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(finter.mod, 
            type = "pred",
            bpe = "median",
-           terms = c("age.centerd","group","sex"),
+           terms = c("age.centerd","sex","group"),
            show.data = TRUE,
            ci.lvl = .95,
-           color = c("red", "blue"),
-           label= c("HC","PD"),
-           title = "Age",
-           legend.title = "Group"
+           title = " ",
+           legend.title = ""
 ) 
 ageplt.finter <- p1 + theme_bw() +
   ylab('1/f intercept (a.u.)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
-  # scale_color_manual(labels=c("HC","PD"), values = c("red", "blue")) +
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(-2.25, -0)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.finter
 
-ggsave("ageplt_finter.png", ageplt.finter, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+ggsave("ageplt_finter.png", ageplt.finter, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# Thickz plot
-p2 <- plot_model(finter.mod, 
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.finter <- p2 + theme_bw() +
-  ylab('1/f intercept (a.u.)') +
-  xlab("Cortical thickness (z-score)")
-  # scale_color_manual(labels=c("HC","PD"), values = c("red","blue", "red","blue"))
-  # scale_fill_manual(labels=c("HC","PD"), values = c("red", "blue")) +
-tckplt.finter
+# # Thickz plot
+# p2 <- plot_model(finter.mod, 
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.finter <- p2 + theme_bw() +
+#   ylab('1/f intercept (a.u.)') +
+#   xlab("Cortical thickness (z-score)")
+#   # scale_color_manual(labels=c("HC","PD"), values = c("red","blue", "red","blue"))
+#   # scale_fill_manual(labels=c("HC","PD"), values = c("red", "blue")) +
+# tckplt.finter
+# 
+# ggsave("tckplt_finter.png", tckplt.finter, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
-ggsave("tckplt_finter.png", tckplt.finter, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
-
-rm(list = ls(pattern = "^finter"))
+rm(list = ls(pattern = "*finter"))
 
 ################################################################################
 # 1/f exponent
@@ -127,48 +134,48 @@ plt.fslope <- plot_model(fslope.mod,
 ) 
 plt.fslope <- plt.fslope + scale_y_continuous(limits=c(-0.2, 0.2)) + theme_bw()
 plt.fslope
-ggsave("modplt_fslope.png", plt.fslope, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_fslope.png", plt.fslope, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(fslope.mod, 
                  type = "pred",
                  bpe = "median",
-                 terms = c("age.centerd","group","sex"),
+                 terms = c("age.centerd","sex","group"),
                  show.data = TRUE,
                  ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Age",
-                 legend.title = "Group"
+                 title = "",
+                 legend.title = ""
 ) 
 ageplt.fslope <- p1 + theme_bw() +
   ylab('1/f exponent (a.u.)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(0.3, 1.2)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.fslope
-ggsave("ageplt_fslope.png", ageplt.fslope, dpi=900,
-       width=100, height=80, units="mm", scale=2)
+ggsave("ageplt_fslope.png", ageplt.fslope, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# Thickz plot
-p2 <- plot_model(fslope.mod, 
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.fslope <- p2 + theme_bw() +
-  ylab('1/f intercept (a.u.)') +
-  xlab("Cortical thickness (z-score)")
-tckplt.fslope
-ggsave("tckplt_fslope.png", tckplt.fslope, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+# # Thickz plot
+# p2 <- plot_model(fslope.mod, 
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.fslope <- p2 + theme_bw() +
+#   ylab('1/f intercept (a.u.)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.fslope
+# ggsave("tckplt_fslope.png", tckplt.fslope, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
-rm(list = ls(pattern = "^fslope"))
+rm(list = ls(pattern = "*fslope"))
 
 ################################################################################
 # Alpha power
@@ -194,46 +201,46 @@ plt.alp_pw <- plot_model(alpha_pw.mod,
 ) 
 plt.alp_pw <- plt.alp_pw + scale_y_continuous(limits=c(-0.2, 0.2)) + theme_bw()
 plt.alp_pw
-ggsave("modplt_alpPow.png", plt.alp_pw, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_alpPow.png", plt.alp_pw, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(alpha_pw.mod, 
                  type = "pred",
                  bpe = "median",
-                 terms = c("age.centerd","group","sex"),
+                 terms = c("age.centerd","sex","group"),
                  show.data = TRUE,
                  ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Age",
-                 legend.title = "Group"
+                 title = "",
+                 legend.title = ""
 ) 
 ageplt.alpPw <- p1 + theme_bw() +
   ylab('Power (a.u.)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(0.1, 0.8)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.alpPw
-ggsave("ageplt_alpPow.png", ageplt.alpPw, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+ggsave("ageplt_alpPow.png", ageplt.alpPw, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# Thickz plot
-p2 <- plot_model(alpha_pw.mod,
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.alpPw <- p2 + theme_bw() +
-  ylab('Power (a.u.)') +
-  xlab("Cortical thickness (z-score)")
-tckplt.alpPw
-ggsave("tckplt_alpPw.png", tckplt.alpPw, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+# # Thickz plot
+# p2 <- plot_model(alpha_pw.mod,
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.alpPw <- p2 + theme_bw() +
+#   ylab('Power (a.u.)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.alpPw
+# ggsave("tckplt_alpPw.png", tckplt.alpPw, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
 rm(list = ls(pattern = "^alpha_pw"))
 
@@ -261,46 +268,45 @@ plt.alp_cf <- plot_model(alpha_cf.mod,
 ) 
 plt.alp_cf <- plt.alp_cf + scale_y_continuous(limits=c(-2, 2)) + theme_bw()
 plt.alp_cf
-ggsave("modplt_alpCF.png", plt.alp_cf, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_alpCF.png", plt.alp_cf, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(alpha_cf.mod, 
                  type = "pred",
                  bpe = "median",
-                 terms = c("age.centerd","group","sex"),
+                 terms = c("age.centerd","sex","group"),
                  show.data = TRUE,
                  ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Age",
-                 legend.title = "Group"
+                 title = "",
+                 legend.title = ""
 ) 
 ageplt.alpCF <- p1 + theme_bw() +
   ylab('Frequency (Hz)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.alpCF
-ggsave("ageplt_alpCF.png", ageplt.alpCF, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+ggsave("ageplt_alpCF.png", ageplt.alpCF, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# thickz plot
-p2 <- plot_model(alpha_cf.mod,
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.alpCF <- p2 + theme_bw() +
-  ylab('Frequency (Hz)') +
-  xlab("Cortical thickness (z-score)")
-tckplt.alpCF
-ggsave("tckplt_alpCf.png", tckplt.alpCF, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+# # thickz plot
+# p2 <- plot_model(alpha_cf.mod,
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.alpCF <- p2 + theme_bw() +
+#   ylab('Frequency (Hz)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.alpCF
+# ggsave("tckplt_alpCf.png", tckplt.alpCF, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
 rm(list = ls(pattern = "^alpha_cf"))
 
@@ -328,48 +334,48 @@ plt.bet_pw <- plot_model(beta_pw.mod,
 ) 
 plt.bet_pw <- plt.bet_pw + scale_y_continuous(limits=c(-0.2, 0.2)) + theme_bw()
 plt.bet_pw
-ggsave("modplt_betPow.png", plt.bet_pw, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_betPow.png", plt.bet_pw, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(beta_pw.mod, 
                  type = "pred",
                  bpe = "median",
-                 terms = c("age.centerd","group","sex"),
+                 terms = c("age.centerd","sex","group"),
                  show.data = TRUE,
                  ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Age",
-                 legend.title = "Group"
+                 title = "",
+                 legend.title = ""
 ) 
 ageplt.betPw <- p1 + theme_bw() +
   ylab('Power (a.u.)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(0.1, 0.7)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.betPw
-ggsave("ageplt_betPow.png", ageplt.betPw, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+ggsave("ageplt_betPow.png", ageplt.betPw, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# Thickz plot
-p2 <- plot_model(beta_pw.mod,
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.betPw <- p2 + theme_bw() +
-  ylab('Power (a.u.)') +
-  xlab("Cortical thickness (z-score)")
-tckplt.betPw
-ggsave("tckplt_betPw.png", tckplt.betPw, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+# # Thickz plot
+# p2 <- plot_model(beta_pw.mod,
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.betPw <- p2 + theme_bw() +
+#   ylab('Power (a.u.)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.betPw
+# ggsave("tckplt_betPw.png", tckplt.betPw, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
-rm(list = ls(pattern = "^beta_pw"))
+rm(list = ls(pattern = "*beta_pw"))
 
 ################################################################################
 # Beta peak frequency
@@ -391,179 +397,260 @@ plt.bet_cf <- plot_model(beta_cf.mod,
                          vline.color = "gray",
                          axis.labels = a.labels,
                          show.values = TRUE,
-                         title = "Alpha centre frequency"
+                         title = "Beta centre frequency"
 ) 
 plt.bet_cf <- plt.bet_cf + scale_y_continuous(limits=c(-4.5, 4.5)) + theme_bw()
 plt.bet_cf
-ggsave("modplt_betCF.png", plt.bet_cf, dpi=900,
-       width=60, height=80, units="mm", scale=2)
+ggsave("modplt_betCF.png", plt.bet_cf, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
 # Age plot
 p1 <- plot_model(beta_cf.mod, 
                  type = "pred",
                  bpe = "median",
-                 terms = c("age.centerd","group","sex"),
+                 terms = c("age.centerd","sex","group"),
                  show.data = TRUE,
                  ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Age",
-                 legend.title = "Group"
+                 title = "",
+                 legend.title = ""
 ) 
 ageplt.betCF <- p1 + theme_bw() +
   ylab('Frequency (Hz)') +
-  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(10, 30)+
+  scale_colour_discrete(labels=c("Female","Male"))
 ageplt.betCF
-ggsave("ageplt_betCF.png", ageplt.betCF, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+ggsave("ageplt_betCF.png", ageplt.betCF, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# thickz plot
-p2 <- plot_model(beta_cf.mod,
-                 type = "pred",
-                 bpe = "mean",
-                 terms = c("thickz","group","sex"),
-                 show.data = TRUE,
-                 ci.lvl = .95,
-                 color = c("red", "blue"),
-                 label= c("HC","PD"),
-                 title = "Cortical thickness",
-                 legend.title = "Group"
-) 
-tckplt.betCF <- p2 + theme_bw() +
-  ylab('Frequency (Hz)') +
-  xlab("Cortical thickness (z-score)")
-tckplt.betCF
-ggsave("tckplt_betCF.png", tckplt.betCF, dpi=900,
-       width=100, height=80, units="mm", scale=1.5)
+# # thickz plot
+# p2 <- plot_model(beta_cf.mod,
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.betCF <- p2 + theme_bw() +
+#   ylab('Frequency (Hz)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.betCF
+# ggsave("tckplt_betCF.png", tckplt.betCF, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
-rm(list = ls(pattern = "^beta_cf"))
+rm(list = ls(pattern = "*betCf"))
 
 ################################################################################
-## Plot burst stats
-# Load models
-load(file='mod_neveBF.RData')
-load(file='lenmod.RData')
-load(file='tuemod.RData')
-load(file='maxmod.RData')
+# N events
+################################################################################
+load(file='mod_neveBF_2.RData')
+mod_neve$data$sex <- revalue(mod_neve$data$sex, c("F"="Female", "M"="Male"))
+mod_neve$data$group <- revalue(mod_neve$data$group, c("patient"="PD", "control"="HC"))
 
-mods <- list(mod.neve.Full2, lenmod, tuemod, maxmod)
-m.labels <- c("Rate", "Length", "Interval", "Amplitude")
-mods <- rev(mods)
-m.labels <- rev(m.labels)
+# Coef plot
+plt.neve <- plot_model(mod_neve, 
+                         type = "est",
+                         bpe = "mean",
+                         bpe.color = "red",
+                         prob.inner = .50,
+                         prob.outer = .95,
+                         show.p = TRUE,
+                         p.style = "asterisk",
+                         colors="bw",
+                         vline.color = "gray",
+                         axis.labels = a.labels,
+                         show.values = TRUE,
+                         title = "Burst rate"
+) 
+plt.neve <- plt.neve + scale_y_continuous(limits=c(0.75, 1.25)) + theme_bw()
+plt.neve
+ggsave("modplt_neve.png", plt.neve, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
-# Plot
-eve.plt <- plot_models(mod.neve.ST, grid = TRUE, std.est = "std", transform = NULL, ci.lvl = 0.95,
-            axis.labels = a.labels, m.labels = m.labels, vline.color = "gray", show.intercept = FALSE,
-            show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = TRUE, show.legend = FALSE,
-            digits = 3, value.size=3, colors="bw")
-eve.plt <- eve.plt + scale_y_continuous(limits=c(-1.25, 1.4)) + theme_bw()
-eve.plt <- eve.plt + scale_y_continuous(limits=c(-0.25, 0.25)) + theme_bw()
-eve.plt
+# Age plot
+p1 <- plot_model(mod_neve, 
+                 type = "pred",
+                 bpe = "median",
+                 terms = c("age.centerd","sex","group"),
+                 show.data = TRUE,
+                 ci.lvl = .95,
+                 title = "",
+                 legend.title = ""
+) 
+ageplt.neve <- p1 + theme_bw() +
+  ylab('Burst/min') +
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  ylim(10, 70)+
+  scale_colour_discrete(labels=c("Female","Male"))
+ageplt.neve
+ggsave("ageplt_neve.png", ageplt.neve, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-# USE THIS PLOT!!!1
-# and different inner/outer probabilities of the HDI
-plot_model(mod.neve.Full2_bf, 
-           type = "est",
-  bpe = "mean",
-  # bpe.style = "dot",
-  bpe.color = "red",
-  prob.inner = .50,
-  prob.outer = .95,
-  show.p = TRUE,
-  p.style = "asterisk",
-  colors="bw",
-  vline.color = "gray",
-  axis.labels = a.labels,
-  show.values = TRUE,
-  title = "Burst rate"
-) + scale_y_continuous(limits=c(0.7, 1.3)) + theme_bw()
-                       
-ggsave("modplt_eve.png", eve.plt, dpi=900,
-       width=100, height=50, units="mm", scale=3)
+# # thickz plot
+# p2 <- plot_model(mod_neve,
+#                  type = "pred",
+#                  bpe = "mean",
+#                  terms = c("thickz","group","sex"),
+#                  show.data = TRUE,
+#                  ci.lvl = .95,
+#                  color = c("red", "blue"),
+#                  label= c("HC","PD"),
+#                  title = "Cortical thickness",
+#                  legend.title = "Group"
+# ) 
+# tckplt.neve <- p2 + theme_bw() +
+#   ylab('Frequency (Hz)') +
+#   xlab("Cortical thickness (z-score)")
+# tckplt.neve
+# ggsave("tckplt_betCF.png", tckplt.betCF, dpi=900,
+#        width=100, height=80, units="mm", scale=1.5)
 
-plot_model(mod.neve.Full2_bf, 
-           type = "pred",
-           bpe = "mean",
-           # bpe.style = "dot",
-           bpe.color = "red",
-           prob.inner = .50,
-           prob.outer = .95,
-           show.p = TRUE,
-           p.style = "asterisk",
-           colors="bw",
-           vline.color = "gray",
-           axis.labels = a.labels,
-           show.values = TRUE,
-           title = "Burst rate"
-)
+rm(list = ls(pattern = "*neve"))
 
-## Plot PSD stats
-# Load models
-load(file='mod_finter.RData')
-load(file='mod_fslope.RData')
-load(file='mod_betapw.RData')
-load(file='mod_betacf.RData')
-load(file='mod_alphapw.RData')
-load(file='mod_alphacf.RData')
+################################################################################
+# Burst duration
+################################################################################
+load(file='lenmod_2.RData')
+# lenmod$data$sex <- revalue(lenmod$data$sex, c("F"="Female", "M"="Male"))
+# lenmod$data$group <- revalue(lenmod$data$group, c("patient"="PD", "control"="HC"))
+lenmod$data <- data.frame(lenmod$data)
 
-mods <- list(beta_pw.Full3,
-             beta_cf.Full3,
-             alpha_pw.Full3,
-             alpha_cf.Full3,
-             finter.Full3,
-             fslope.Full3)
-m.labels <- c("Beta power", "Beta centre freq.", "Alpha power", "Alpha centre freq.", "1/f offset", "1/f exponent")
-mods <- rev(mods)
-m.labels <- rev(m.labels)
+# Coef plot
+plt.lene<- plot_model(lenmod, 
+                       type = "est",
+                       bpe = "mean",
+                       bpe.color = "red",
+                       prob.inner = .50,
+                       prob.outer = .95,
+                       show.p = TRUE,
+                       p.style = "asterisk",
+                       colors="bw",
+                       vline.color = "gray",
+                       axis.labels = a.labels,
+                       show.values = TRUE,
+                       title = "Burst duration"
+) 
+plt.lene <- plt.lene + scale_y_continuous(limits=c(-0.25, 0.25)) + theme_bw()
+plt.lene
+ggsave("modplt_lene.png", plt.lene, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
-psd.plt <- plot_models(mods, grid = TRUE, std.est = "std2", transform = NULL,
-                       axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
-                       show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
-                       digits = 3, value.size=3, colors="bw")
-psd.plt <- psd.plt + scale_y_continuous(limits=c(-1.25, 1.5)) + theme_bw()
-psd.plt
+# Age plot
+p1 <- plot_model(lenmod,
+                 type = "pred",
+                 bpe = "mean",
+                 terms = c('age.centerd',"sex","group"),
+                 pred.type = "fe",
+                 show.data = TRUE,
+                 ci.lvl = .95,
+                 title = "",
+                 legend.title = ""
+)   
+ageplt.lene <- p1 + theme_bw() +
+  ylab('log(s)') +
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  scale_colour_discrete(labels=c("Female","Male"))
+  # scale_y_continuous(trans="exp", limits=c(-10, -1.5), breaks=log(c(0.5, 0.4, 0.3, 0.2, 0.1)), labels=c(0.5, 0.4, 0.3, 0.2, 0.1))
+ageplt.lene
+ggsave("ageplt_lene.png", ageplt.lene, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-ggsave("modplt_psd.png", psd.plt, dpi=900,
-       width=140, height=50, units="mm", scale=3)
+rm(list = ls(pattern = "*lene"))
 
-## PLOT ANALYSIS 2
+################################################################################
+# Burst interval
+################################################################################
+load(file='tuemod_2.RData')
+tuemod$data <- data.frame(tuemod$data)
 
-# Load models
-load(file="updrsmods.RData")
+# Coef plot
+plt.tue <- plot_model(tuemod, 
+                      type = "est",
+                      bpe = "mean",
+                      bpe.color = "red",
+                      prob.inner = .50,
+                      prob.outer = .95,
+                      show.p = TRUE,
+                      p.style = "asterisk",
+                      colors="bw",
+                      vline.color = "gray",
+                      axis.labels = a.labels,
+                      show.values = TRUE,
+                      title = "Burst inteval"
+) 
+plt.tue <- plt.tue + scale_y_continuous(limits=c(-0.4, 0.4)) + theme_bw()
+plt.tue
+ggsave("modplt_tue.png", plt.tue, dpi=dpi,
+       width=p1.w, height=p1.h, units="mm", scale=3)
 
-mods <- list(F1mod.x, F2mod.x, F3mod.x, F45mod.x, F6mod.x, F7mod.x)
-mods <- rev(mods)
+# Age plot
+p1 <- plot_model(tuemod,
+                 type = "pred",
+                 bpe = "mean",
+                 terms = c('age.centerd',"sex","group"),
+                 pred.type = "fe",
+                 show.data = TRUE,
+                 ci.lvl = .95,
+                 title = "",
+                 legend.title = ""
+)   
+ageplt.tue<- p1 + theme_bw() +
+  ylab('log(s)') +
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  scale_colour_discrete(labels=c("Female","Male"))
+# scale_y_continuous(trans="exp", limits=c(-10, -1.5), breaks=log(c(0.5, 0.4, 0.3, 0.2, 0.1)), labels=c(0.5, 0.4, 0.3, 0.2, 0.1))
+ageplt.tue
+ggsave("ageplt_tue.png", ageplt.tue, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-a.labels <- c("Rate", "Length", "Interval", "Amplitude",
-              "1/f offset", "1/f exponent", "Alpha power", "Alpha centre freq.", "Beta power", "Beta centre freq.",
-              "Age", "Sex", "Cortical thickness")
-a.labels <- rev(a.labels)
-m.labels <- c("Midline function", 
-              "Rest tremor", 
-              "Rigidity", 
-              "Bradykinesia upper limb", 
-              "Postural and kinetic tremor", 
-              "Bradykinesia lower limb")
-m.labels <- rev(m.labels)
+################################################################################
+# Burst amplitude
+################################################################################
+load(file='maxmod_2.RData')
+maxmod$data <- data.frame(maxmod$data)
 
-updrs.plt <- plot_models(mods, grid = TRUE, std.est = NULL, transform = NULL, axis.lim=c(-2,2),
-                         axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
-                         show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
-                         digits = 3, value.size=3, colors="bw")
-updrs.plt <- updrs.plt + scale_y_continuous(limits=c(-2.5, 2)) + theme_bw()
-updrs.plt
+# Coef plot
+plt.max <- plot_model(maxmod, 
+                      type = "est",
+                      bpe = "mean",
+                      bpe.color = "red",
+                      prob.inner = .50,
+                      prob.outer = .95,
+                      show.p = TRUE,
+                      p.style = "asterisk",
+                      colors="bw",
+                      vline.color = "gray",
+                      axis.labels = a.labels,
+                      show.values = TRUE,
+                      title = "Burst amplitude"
+) 
+plt.max <- plt.max + scale_y_continuous(limits=c(-0.6, 0.6)) + theme_bw()
+plt.max
+ggsave("modplt_max.png", plt.max, dpi=dpi,
+       width=40, height=50, units="mm", scale=3)
 
-updrs.plt <- plot_models(F45mod.x, show.intercept = FALSE, rm.terms = 'b_Intercept')
-updrs.plt
+# Age plot
+p1 <- plot_model(maxmod,
+                 type = "pred",
+                 bpe = "mean",
+                 terms = c('age.centerd',"sex","group"),
+                 pred.type = "fe",
+                 show.data = TRUE,
+                 ci.lvl = .95,
+                 title = "",
+                 legend.title = ""
+)   
+ageplt.max<- p1 + theme_bw() +
+  ylab('log-power') +
+  scale_x_continuous(name="Age (years)", breaks=seq(-20, 20, by=10), labels=age.convert)+
+  scale_colour_discrete(labels=c("Female","Male"))
+# scale_y_continuous(trans="exp", limits=c(-10, -2), breaks=log(c(0.5, 0.4, 0.3, 0.2, 0.1)), labels=c(0.5, 0.4, 0.3, 0.2, 0.1))
+ageplt.max
+ggsave("ageplt_max.png", ageplt.max, dpi=dpi,
+       width=p2.w, height=p2.h, units="mm", scale=3)
 
-
-, grid = TRUE, std.est = NULL, transform = NULL, axis.lim=c(-2,2),
-                         axis.labels = a.labels, m.labels = m.labels, vline.color = "gray",
-                         show.values = TRUE, show.p = FALSE, p.shape = FALSE, auto.label = FALSE, show.legend = FALSE,
-                         digits = 3, value.size=3, colors="bw")
-updrs.plt
-
-
-ggsave("modplt_updrs.png", updrs.plt, dpi=900,
-       width=140, height=50, units="mm", scale=3)
-
+#END

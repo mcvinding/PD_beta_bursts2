@@ -25,6 +25,9 @@ setwd(outdir)
 
 load(file='/home/mikkel/PD_longrest/groupanalysis/alldata_subj2.Rdata')
 load(file='/home/mikkel/PD_longrest/groupanalysis/bbdata2.Rdata')
+peaks <- read.csv("peaks_no_fooof.csv", sep = ",")
+peaks$subj <- paste(rep(0,1), peaks$subj, sep = "")
+alldata <- merge(alldata, peaks, by="subj")
 
 ## Transform variables
 bbdata$age.centerd <- bbdata$age-mean(bbdata$age)
@@ -476,4 +479,179 @@ if (!file.exists('all_maxmod.RData') || overwrite){
   rm(list = ls(pattern = "^maxmod"))
 }
 
-#END
+
+######################################################################################
+# "Raw" beta power
+# beta_pw.Full3 <- lm(beta_pw ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
+raw_beta_pw.Full2 <- lm(raw_beta_pw ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), data=alldata)
+summary(raw_beta_pw.Full2)
+# qqnorm(resid(beta_pw.Full2))
+# qqline(resid(beta_pw.Full2))
+
+# Bayes with BRMS
+if (!file.exists('mod_rawbetapw_2.RData') || overwrite){
+  print('raw beta power model')
+  raw_beta_pw.mod <- brm(raw_beta_pw ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), 
+                     data=alldata,
+                     iter=20000, cores=4, save_pars = save_pars(all = TRUE), sample_prior="yes")
+  ## Save
+  setwd(outdir)
+  save(raw_beta_pw.mod, file='mod_rawbetapw_2.RData')
+}
+
+# Model comparison with bridge sampling
+if (!file.exists('all_rawbetapw_mod.RData') || overwrite){
+  print('raw beta power step-models')
+  raw_beta_pw.0   <- brm(raw_beta_pw ~ 1, data=alldata,  iter=20000, cores=4, save_pars = save_pars(all = TRUE))
+  raw_beta_pw.G   <- update(raw_beta_pw.0, ~. +group, newdata=alldata, cores=4)
+  raw_beta_pw.A   <- update(raw_beta_pw.G, ~. +age.centerd, newdata=alldata, cores=4)
+  raw_beta_pw.S   <- update(raw_beta_pw.A, ~. +sex, newdata=alldata, cores=4)
+  raw_beta_pw.T   <- update(raw_beta_pw.S, ~. +thickz, newdata=alldata, cores=4)
+  raw_beta_pw.A2  <- update(raw_beta_pw.T, ~. +I(age.centerd^2), newdata=alldata, cores=4)
+  raw_beta_pw.GA  <- update(raw_beta_pw.A2, ~. +group:age.centerd, newdata=alldata, cores=4)
+  raw_beta_pw.GS  <- update(raw_beta_pw.GA, ~. +group:sex, newdata=alldata, cores=4)
+  raw_beta_pw.GT  <- update(raw_beta_pw.GS, ~. +group:thickz, newdata=alldata, cores=4)
+  raw_beta_pw.SA  <- update(raw_beta_pw.GT, ~. +sex:age.centerd, newdata=alldata, cores=4)
+  raw_beta_pw.AT  <- update(raw_beta_pw.SA, ~. +age.centerd:thickz, newdata=alldata, cores=4)
+  raw_beta_pw.ST  <- update(raw_beta_pw.AT, ~. +sex:thickz, newdata=alldata, cores=4)
+  # beta_pw.GAS <- update(beta_pw.ST, ~. +group:age.centerd:sex)
+  # beta_pw.GAT <- update(beta_pw.GAS, ~. +group:age.centerd:thickz)
+  # beta_pw.GST <- update(beta_pw.GAT, ~. +group:sex:thickz)
+  # beta_pw.AST <- update(beta_pw.GST, ~. +age.centerd:sex:thickz)
+  
+  # Save and clear (to save memory)
+  save(list = ls(pattern = "^raw_beta_pw."), file = 'all_rawbetapw_mod.RData')
+  rm(list = ls(pattern = "^raw_beta_pw"))
+}
+######################################################################################
+# "Raw" beta peak freq
+#beta_cf.Full3 <- lm(beta_cf ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
+raw_beta_cf.Full2 <- lm(raw_beta_cf ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), data=alldata)
+summary(raw_beta_cf.Full2)
+# qqnorm(resid(beta_cf.Full2))
+# qqline(resid(beta_cf.Full2))
+
+# Bayes with BRMS
+if (!file.exists('mod_rawbetacf_2.RData') || overwrite){
+  print('UNFILTERED BETA CENTER FREQUENCY model')
+  raw_beta_cf.mod <- brm(raw_beta_cf ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), 
+                     data=alldata,
+                     iter=20000, cores=4, save_pars = save_pars(all = TRUE), sample_prior="yes")
+  ## Save
+  setwd(outdir)
+  save(raw_beta_cf.mod, file='mod_rawbetacf_2.RData')
+}
+
+# Model comparison with bridge sampling
+if (!file.exists('all_rawbetacf_mod.RData') || overwrite){
+  print('UNFILTERED BETA CENTER FREQUENCY step-models')
+  raw_beta_cf.0   <- brm(raw_beta_cf ~ 1, data=alldata,  iter=20000, cores=4, save_pars = save_pars(all = TRUE))
+  raw_beta_cf.G   <- update(raw_beta_cf.0, ~. +group, newdata=alldata, cores=4)
+  raw_beta_cf.A   <- update(raw_beta_cf.G, ~. +age.centerd, newdata=alldata, cores=4)
+  raw_beta_cf.S   <- update(raw_beta_cf.A, ~. +sex, newdata=alldata, cores=4)
+  raw_beta_cf.T   <- update(raw_beta_cf.S, ~. +thickz, newdata=alldata, cores=4)
+  raw_beta_cf.A2  <- update(raw_beta_cf.T, ~. +I(age.centerd^2), newdata=alldata, cores=4)
+  raw_beta_cf.GA  <- update(raw_beta_cf.A2, ~. +group:age.centerd, newdata=alldata, cores=4)
+  raw_beta_cf.GS  <- update(raw_beta_cf.GA, ~. +group:sex, newdata=alldata, cores=4)
+  raw_beta_cf.GT  <- update(raw_beta_cf.GS, ~. +group:thickz, newdata=alldata, cores=4)
+  raw_beta_cf.SA  <- update(raw_beta_cf.GT, ~. +sex:age.centerd, newdata=alldata, cores=4)
+  raw_beta_cf.AT  <- update(raw_beta_cf.SA, ~. +age.centerd:thickz, newdata=alldata, cores=4)
+  raw_beta_cf.ST  <- update(raw_beta_cf.AT, ~. +sex:thickz, newdata=alldata, cores=4)
+  # beta_cf.GAS <- update(beta_cf.ST, ~. +group:age.centerd:sex)
+  # beta_cf.GAT <- update(beta_cf.GAS, ~. +group:age.centerd:thickz)
+  # beta_cf.GST <- update(beta_cf.GAT, ~. +group:sex:thickz)
+  # beta_cf.AST <- update(beta_cf.GST, ~. +age.centerd:sex:thickz)
+  
+  # Save and clear (to save memory)
+  save(list = ls(pattern = "^raw_beta_cf."), file = 'all_rawbetacf_mod.RData')
+  rm(list = ls(pattern = "^raw_beta_cf"))
+}
+
+######################################################################################
+# "Raw" Alpha power
+#raw_alpha_pw.Full3 <- lm(raw_al_pw ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
+raw_alpha_pw.Full2 <- lm(raw_alpha_pw ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), data=alldata)
+summary(raw_alpha_pw.Full2)
+# qqnorm(resid(alpha_pw.Full2))
+# qqline(resid(alpha_pw.Full2))
+
+# Bayes with BRMS
+if (!file.exists('mod_rawalphapw_2.RData') || overwrite){
+  print('UNFILTERED ALPHA power model')
+  raw_alpha_pw.mod <- brm( raw_alpha_pw ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), 
+                      data=alldata,
+                      iter=20000, cores=4, save_pars = save_pars(all = TRUE), sample_prior="yes")
+  ## Save
+  setwd(outdir)
+  save(raw_alpha_pw.mod, file='mod_rawalphapw_2.RData')
+}
+
+# Model comparison with bridge sampling
+if (!file.exists('all_rawalphapw_mod.RData') || overwrite){
+  print('raw ALPHA power step-models')
+  raw_alpha_pw.0   <- brm( raw_alpha_pw ~ 1, data=alldata,  iter=20000, cores=4, save_pars = save_pars(all = TRUE))
+  raw_alpha_pw.G   <- update(raw_alpha_pw.0, ~. +group, newdata=alldata, cores=4)
+  raw_alpha_pw.A   <- update(raw_alpha_pw.G, ~. +age.centerd, newdata=alldata, cores=4)
+  raw_alpha_pw.S   <- update(raw_alpha_pw.A, ~. +sex, newdata=alldata, cores=4)
+  raw_alpha_pw.T   <- update(raw_alpha_pw.S, ~. +thickz, newdata=alldata, cores=4)
+  raw_alpha_pw.A2  <- update(raw_alpha_pw.T, ~. +I(age.centerd^2), newdata=alldata, cores=4)
+  raw_alpha_pw.GA  <- update(raw_alpha_pw.A2, ~. +group:age.centerd, newdata=alldata, cores=4)
+  raw_alpha_pw.GS  <- update(raw_alpha_pw.GA, ~. +group:sex, newdata=alldata, cores=4)
+  raw_alpha_pw.GT  <- update(raw_alpha_pw.GS, ~. +group:thickz, newdata=alldata, cores=4)
+  raw_alpha_pw.SA  <- update(raw_alpha_pw.GT, ~. +sex:age.centerd, newdata=alldata, cores=4)
+  raw_alpha_pw.AT  <- update(raw_alpha_pw.SA, ~. +age.centerd:thickz, newdata=alldata, cores=4)
+  raw_alpha_pw.ST  <- update(raw_alpha_pw.AT, ~. +sex:thickz, newdata=alldata, cores=4)
+  # alpha_pw.GAS <- update(alpha_pw.ST, ~. +group:age.centerd:sex)
+  # alpha_pw.GAT <- update(alpha_pw.GAS, ~. +group:age.centerd:thickz)
+  # alpha_pw.GST <- update(alpha_pw.GAT, ~. +group:sex:thickz)
+  # alpha_pw.AST <- update(alpha_pw.GST, ~. +age.centerd:sex:thickz)
+  
+  # Save and clear (to save memory)
+  save(list = ls(pattern = "^raw_alpha_pw."), file = 'all_rawalphapw_mod.RData')
+  rm(list = ls(pattern = "^raw_alpha_pw"))
+}
+
+######################################################################################
+# Alpha peak freq
+#alpha_cf.Full3 <- lm(alpha_cf ~ (group+age.centerd+sex+thickz)^3+I(age.centerd^2), data=alldata)
+raw_alpha_cf.Full2 <- lm(raw_alpha_cf ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), data=alldata)
+summary(raw_alpha_cf.Full2 ) 
+# qqnorm(resid(alpha_cf.Full2))
+# qqline(resid(alpha_cf.Full2))
+
+# Bayes with BRMS
+if (!file.exists('mod_rawalphacf_2.RData') || overwrite){
+  print('UNFILETRED ALPHA CENTER FREQUENCY  model')
+  raw_alpha_cf.mod <- brm(raw_alpha_cf ~ (group+age.centerd+sex+thickz)^2+I(age.centerd^2), 
+                      data=alldata,
+                      iter=20000, cores=4, save_pars = save_pars(all = TRUE), sample_prior="yes")
+  ## Save
+  setwd(outdir)
+  save(raw_alpha_cf.mod, file='mod_rawalphacf_2.RData')
+}
+
+# Model comparison with bridge sampling
+if (!file.exists('all_alphacf_mod.RData') || overwrite){
+  print('ALPHA CENTER FREQUENCY step-models')
+  raw_alpha_cf.0   <- brm(alpha_cf ~ 1, data=alldata,  iter=20000, cores=4, save_pars = save_pars(all = TRUE))
+  raw_alpha_cf.G   <- update(raw_alpha_cf.0, ~. +group, newdata=alldata, cores=4)
+  raw_alpha_cf.A   <- update(raw_alpha_cf.G, ~. +age.centerd, newdata=alldata, cores=4)
+  raw_alpha_cf.S   <- update(raw_alpha_cf.A, ~. +sex, newdata=alldata, cores=4)
+  raw_alpha_cf.T   <- update(raw_alpha_cf.S, ~. +thickz, newdata=alldata, cores=4)
+  raw_alpha_cf.A2  <- update(raw_alpha_cf.T, ~. +I(age.centerd^2), newdata=alldata, cores=4)
+  raw_alpha_cf.GA  <- update(raw_alpha_cf.A2, ~. +group:age.centerd, newdata=alldata, cores=4)
+  raw_alpha_cf.GS  <- update(raw_alpha_cf.GA, ~. +group:sex, newdata=alldata, cores=4)
+  raw_alpha_cf.GT  <- update(raw_alpha_cf.GS, ~. +group:thickz, newdata=alldata, cores=4)
+  raw_alpha_cf.SA  <- update(raw_alpha_cf.GT, ~. +sex:age.centerd, newdata=alldata, cores=4)
+  raw_alpha_cf.AT  <- update(raw_alpha_cf.SA, ~. +age.centerd:thickz, newdata=alldata, cores=4)
+  raw_alpha_cf.ST  <- update(raw_alpha_cf.AT, ~. +sex:thickz, newdata=alldata, cores=4)
+  # alpha_cf.GAS <- update(alpha_cf.ST, ~. +group:age.centerd:sex)
+  # alpha_cf.GAT <- update(alpha_cf.GAS, ~. +group:age.centerd:thickz)
+  # alpha_cf.GST <- update(alpha_cf.GAT, ~. +group:sex:thickz)
+  # alpha_cf.AST <- update(alpha_cf.GST, ~. +age.centerd:sex:thickz)
+  
+  # Save and clear (to save memory)
+  save(list = ls(pattern = "^raw_alpha_cf."), file = 'all_rawalphacf_mod.RData')
+  rm(list = ls(pattern = "^raw_alpha_cf"))
+
+  #END

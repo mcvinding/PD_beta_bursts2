@@ -1,7 +1,7 @@
 ###########################################################################################
 # Import data to R and save for further analysis and plotting. Subject metadata, clinical 
 # data, event length, peak amplitude and time until next event (tue) data per individual 
-# event. Arrange into dataframe with one event per row
+# event. Arrange into data frame with one event per row
 #
 # Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease. medRxiv.org. https://doi.org/10.1101/2021.06.27.21259592
 #
@@ -11,14 +11,13 @@ library(R.matlab)
 library(xlsx)
 
 # Define paths
-wrkdir <- "X://PD_longrest//groupanalysis"
-# wrkdir <- "C://Users//Mikkel//Documents//PDbb2//groupanalysis"
+wrkdir <- "/home/mikkel/PD_longrest/groupanalysis"
 setwd(wrkdir)
 
 ###########################################################################################
 # %%% Load SUBJECT METADATA %%%
 ###########################################################################################
-# load(file='X://PD_longrest//groupanalysis//alldata_subj.Rdata')
+# load(file='alldata_subj2.Rdata')
 load(file='sdata.Rdata')
 load(file='clindata.Rdata')
 load(file='thickdata.Rdata')

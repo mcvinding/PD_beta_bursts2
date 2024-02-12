@@ -1,22 +1,26 @@
 # Plot summary of PSD features from FOOOF analysis
 #
-# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M.,  Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease [Preprint]. medRxiv.org https://doi.org/10.1101/2021.06.27.21259592
+# Vinding, M. C., Eriksson, A., Low, C. M. T., Waldthaler, J., Ferreira, D., Ingvar, M., 
+#  Svenningsson, P., & Lundqvist, D. (2021). Different features of the cortical sensorimotor 
+#  rhythms are uniquely linked to the severity of specific symptoms in Parkinson's disease [Preprint]. 
+#  medRxiv.org https://doi.org/10.1101/2021.06.27.21259592
 #
+
 library(ggplot2)
 
 # load source code
-devtools::source_gist("2a1bb0133ff568cbe28d", filename = "geom_flat_violin.R") # sourced from github "dgrtwo/geom_flat_violin.R
+devtools::source_gist("2a1bb0133ff568cbe28d", filename = "geom_flat_violin.R") # sourced from github "dgrtwo/geom_flat_violin.R"
 
 # Load data
 load(file='/home/mikkel/PD_longrest/groupanalysis/alldata_subj2.Rdata')
 setwd('~/PD_longrest/figures')
 
-# 1/f intercept plot
+# 1/f intercept/offset plot
 icp.plt <- ggplot(alldata, aes(x = group, y = a_intercept)) + 
   geom_flat_violin(scale = "count", trim = FALSE, aes(fill=group), alpha=0.6) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "pointrange", position = position_nudge(0.05)) + 
   geom_dotplot(binaxis = "y", dotsize = 0.75, stackdir = "down", position = position_nudge(-0.025)) + 
-  labs(x = "", y = "", title="1/f intercept") +
+  labs(x = "", y = "", title="1/f offset") +
   scale_x_discrete(labels=c("HC","PD")) +
   scale_fill_manual(values=c('red','blue'), guide=FALSE)+
   theme_bw() +
@@ -28,7 +32,7 @@ icp.plt <- ggplot(alldata, aes(x = group, y = a_intercept)) +
         panel.border = element_blank(),
         axis.line = element_line())
 icp.plt
-ggsave("hist_oof_intercept.jpg", plot=icp.plt, 
+ggsave("hist_oof_intercept.jpg", plot=icp.plt,
        device="jpg", units="mm", width=30, height=30, dpi=600, scale=4)
 
 # 1/f exponent
